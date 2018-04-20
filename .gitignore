@@ -1,3 +1,5 @@
-.priv/*
-samples/*
-log/*
+/.priv/
+/samples/
+/log/
+/vendor/
+composer.lock

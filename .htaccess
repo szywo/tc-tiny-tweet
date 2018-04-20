@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Exclude existing .css files located in /css/ directory from rewriting rules
+RewriteCond %{REQUEST_FILENAME} ^.*/css/.*\.css$
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^.*$ - [NC,L]
+
+# Redirect paths with no trailing slash to ones with it except if it has dot
+# in last part (if it looks like a file)
+RewriteRule ^(([^/]+/)*[^/.]+)$ %{REQUEST_SCHEME}://%{HTTP_HOST}%{REQUEST_URI}/ [R=301,L]
+
+# Finaly redirect everything else to index.php
+RewriteRule ^.*$ index.php [NC,L]
