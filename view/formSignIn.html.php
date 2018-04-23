@@ -4,15 +4,15 @@
             <div class="card-header">
                 <ul id="logregnav" class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" href="<?= $page_signin_uri ?>">Sign in</a>
+                        <a class="nav-link active" href="<?= $tpl_signInUri ?>">Sign in</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= $page_signup_uri ?>">Sign up</a>
+                        <a class="nav-link" href="<?= $tpl_signUpUri ?>">Sign up</a>
                     </li>
                 </ul>
             </div>
             <div class="card-body">
-                <form action="<?= $page_signin_uri ?>" accept-charset="UTF-8" method="post">
+                <form action="<?= $tpl_signInUri ?>" accept-charset="UTF-8" method="post">
                     <div class="form-group mb-4">
                         <label class="px-1 mb-1" for="email"><strong>Email address</strong></label>
                         <input type="email" name="email" class="form-control" id="email" placeholder="email">

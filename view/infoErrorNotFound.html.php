@@ -6,11 +6,11 @@
             </h4>
             <div class="card-body">
                 <p class="card-text">
-                    Requested page "<?= htmlentities("/".$page_request_uri, ENT_QUOTES|ENT_HTML5) ?>" was not found on this server.
+                    Requested page "<?= $tpl_requestUri ?>" was not found on this server.
                 </p>
                 <p class="card-text">
                     Please check address again or start over
-                    <strong><a class="text-danger" href="<?= $page_base_path ?>">here</a></strong>.
+                    <strong><a class="text-danger" href="<?= $tpl_basePath ?>">here</a></strong>.
                 </p>
             </div>
         </div>

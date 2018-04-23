@@ -11,7 +11,7 @@ namespace szywo\TinyTweet;
  * To use variable - for example page title:
  *
  *   1. in template file use:
- *       <title><?= $title ?></title>
+ *       <title><?= $tpl_title ?></title>
  *
  *   2. in controller:
  *       $view->title = "My title";
@@ -24,7 +24,7 @@ namespace szywo\TinyTweet;
  *
  *   1. in template file use:
  *       <body>
- *           <?= $body ?>
+ *           <?= $tpl_body ?>
  *       </body>
  *
  *   2. in controller (after setting all variables needed in <body>)
@@ -41,6 +41,13 @@ namespace szywo\TinyTweet;
  *   2. Constructor pre defines some common variables to make it easier
  *      working with xdebug
  *
+ *   3. Modified render functin so that all extracted variables have
+ *      VAR_PREFIX (default "tpl_") prefix added (to avoid overwriting
+ *      existing variables). Underscore is enforced by the way prefixing
+ *      works in extract() function but it is good because camelCase variable
+ *      names are prefixed in very distinctive way: tpl_camelCase instead of
+ *      tplcamelCase. Its one of rare cases where mixing naming conventions
+ *      has positive outcome.
  *
  * @author Chad Minick
  * @link http://chadminick.com/articles/simple-php-template-engine.html
@@ -50,6 +57,8 @@ namespace szywo\TinyTweet;
  */
 class Template
 {
+    const VAR_PREFIX = 'tpl';
+
     private static $instance;
     private $vars  = array();
 
@@ -61,14 +70,14 @@ class Template
      */
     private function __construct()
     {
-        $this->vars['page_title'] = "";
-        $this->vars['page_base_path'] = "";
-        $this->vars['page_css_file'] = "";
-        $this->vars['page_menu_box'] = "";
-        $this->vars['page_info_box'] = "";
-        $this->vars['page_form_box'] = "";
-        $this->vars['page_content_box'] = "";
-        $this->vars['page_body'] = "";
+        $this->vars['title'] = "";
+        $this->vars['basePath'] = "";
+        $this->vars['cssFile'] = "";
+        $this->vars['menuBox'] = "";
+        $this->vars['infoBox'] = "";
+        $this->vars['formBox'] = "";
+        $this->vars['contentBox'] = "";
+        $this->vars['body'] = "";
     }
 
     /**
@@ -122,7 +131,7 @@ class Template
         if (array_key_exists('view_template_file', $this->vars)) {
             throw new Exception("Cannot bind variable called 'view_template_file'");
         }
-        extract($this->vars);
+        extract($this->vars, EXTR_PREFIX_ALL, self::VAR_PREFIX);
         ob_start();
         include($view_template_file);
         return ob_get_clean();

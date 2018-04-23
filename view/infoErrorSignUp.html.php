@@ -3,7 +3,7 @@
         <div class="alert alert-danger" role="alert">
             Registration failed.
             <ul>
-            <?php foreach ($page_error_messages as $message) { ?>
+            <?php foreach ($tpl_errorMessages as $message) { ?>
                 <li><?= $message ?></li>
             <?php } ?>
         </ul>
