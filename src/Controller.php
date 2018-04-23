@@ -59,7 +59,7 @@ final class Controller
         }
     }
 
-    final public static function getController()
+    final public static function getInstance()
     {
         if (self::$instance === null){
             self::$instance = new Controller();
