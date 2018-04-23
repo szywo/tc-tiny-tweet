@@ -1,5 +1,4 @@
 <?php
-
 namespace szywo\TinyTweet;
 
 final class Controller
@@ -9,21 +8,21 @@ final class Controller
     const TWEET_PAGE   = 'tweet';
     const SIGNUP_PAGE  = 'register';
     const SIGNIN_PAGE  = 'login';
-    const SIGNOUT_PAGE  = 'logout';
+    const SIGNOUT_PAGE = 'logout';
     const USER_PAGE    = 'user';
     const PROFILE_PAGE = 'profile';
     const MESSAGE_PAGE = 'message';
 
     private static $instance;
 
-    private $allowedPages = [
-        self::TWEET_PAGE   => true,    // can show individual tweets by id
-        self::SIGNUP_PAGE  => false,   // no parameters
-        self::SIGNIN_PAGE  => false,   // no parameters
-        self::SIGNOUT_PAGE  => false,  // no parameters
-        self::USER_PAGE    => true,    // can show user activity by user id
-        self::PROFILE_PAGE => false,   // no parameters
-        self::MESSAGE_PAGE => true,    // can show private messages by id
+    private $pagesParameters = [
+        self::TWEET_PAGE    => true,    // can show individual tweets by id
+        self::SIGNUP_PAGE   => false,   // no parameters
+        self::SIGNIN_PAGE   => false,   // no parameters
+        self::SIGNOUT_PAGE  => false,   // no parameters
+        self::USER_PAGE     => true,    // can show user activity by user id
+        self::PROFILE_PAGE  => false,   // no parameters
+        self::MESSAGE_PAGE  => true,    // can show private messages by id
     ];
 
     private $basePath;
@@ -37,21 +36,35 @@ final class Controller
     final private function __construct()
     {
         // set base path for cases when script runs in subdir of a server
-        $basePath = str_replace(self::SCRIPT_NAME,"",$_SERVER['SCRIPT_NAME']);;
+        // /basedir/script.php -> basedir/
+        $pattern = "/".self::SCRIPT_NAME."$/";
+        $basePath = preg_replace($pattern, "", $_SERVER['SCRIPT_NAME']);
         $this->basePath = $basePath;
 
-        // check what is left of URI when host and base path is taken out
-        $requestUri = str_replace($basePath,"",$_SERVER['REQUEST_URI']);
-        $requestUri = str_replace(self::SCRIPT_NAME."/","",$requestUri);
+        // check what is left of URI when base path is taken out
+        // /basedir/subdirs_files_and_query_string
+        //     -> subdirs_files_and_query_string
+        $pattern = "/^".str_replace("/", "\/", $basePath)."/";
+        $requestUri = preg_replace($pattern, "", $_SERVER['REQUEST_URI']);
+
+        // exclude script's file name from leftover URI string if it's there
+        $pattern = "/^".self::SCRIPT_NAME."\/?/";
+        $requestUri = preg_replace($pattern, "", $requestUri);
         $this->requestUri = $requestUri;
 
-        // exploding empty string returns one (empty) element array
+        // explode resulting URI string into array of subdir names
+        // subdir1/subdir2/[.../][end_string]
+        //    -> array('subdir1', 'subdir2'[, ...][, 'end_string'], '')
+        // note: exploding empty string returns one (empty) element array
         $requestedPage = explode("/",$requestUri);
+
         //now check if valid page was requested
-        if (array_key_exists($requestedPage[0], $this->allowedPages)) {
+        if (array_key_exists($requestedPage[0], $this->pagesParameters)) {
             $this->pageName = $requestedPage[0];
             $this->pageId = -1;
-            if ($this->allowedPages[$this->pageName]) {
+            // check if requested page can receive additional id parameter
+            // and extract it
+            if ($this->pagesParameters[$this->pageName]) {
                 $options = ['options' => ['default' => -1, 'min_range' => 1]];
                 $this->pageId = filter_var($requestedPage[1], FILTER_VALIDATE_INT, $options);
             }
@@ -84,7 +97,7 @@ final class Controller
         return $this->pageName;
     }
 
-    final public function pageId()
+    final public function getPageId()
     {
         return $this->pageId;
     }
@@ -124,10 +137,10 @@ final class Controller
         if (isset($_POST['email']) && isset($_POST['pass']) ) {
             // here we should consult User class methods to check user
             // for now do it staticaly
-            if ($_POST['email'] === "jan@example.com"
+            if ($_POST['email'] === "jan@k.pl"
                 && $_POST['pass'] === "go") {
                 $_SESSION['userId'] = 1;
-                $_SESSION['email'] = 'jan@example.com';
+                $_SESSION['email'] = 'jan@k.pl';
                 $_SESSION['nick'] = 'Jan';
                 return true;
             }

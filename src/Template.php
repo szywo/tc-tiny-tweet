@@ -120,7 +120,7 @@ class Template
     }
 
     /**
-     * Magic function to set value of variable.
+     * Extracts variables and renders template based on those.
      *
      * @param string $view_template_file Tamplate file to render
      * @return string The rendered tamplate with all variables substituded
