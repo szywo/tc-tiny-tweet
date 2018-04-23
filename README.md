@@ -19,8 +19,8 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
     - [ ] Main (Tweet list + form) (private)
       - [ ] Redirection to login page if user is not logged-in
       - [ ] Add tweet form
-    - [ ] Login form (public)
-    - [ ] Register form (public)
+    - [x] Login form (public)
+    - [x] Register form (public)
     - [ ] Tweets by user view (private)
       - [ ] User's tweets (+comment counters) list
       - [ ] Private message button/form

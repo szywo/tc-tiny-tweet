@@ -17,25 +17,41 @@ $view->page_base_path = $ctrl->getBasePath();
 $page = $ctrl->getPageName();
 
 if ($page === Controller::SIGNIN_PAGE) {
+    if ($ctrl->isMethodPost()) {
+        if ( $ctrl->sentValidCredentials()) {
+            // log in user (set session data) and redirect to main page
+            exit();
+        } else {
+            $view->page_error_box = $view->render("view/errorSignIn.html.php");
+        }
+    }
     $view->page_title = "Sign in to TinyTweet · TinyTweet";
-    // login form functionaity
-    $view->page_css_file = "pageNotFound.css";
-    $view->page_request_uri = $ctrl->getRequestUri();
-    $view->page_error_box = $view->render("view/errorNotFound.html.php");
-    $view->page_body = $view->render("view/pageBodyTemplate.html.php");
-    http_response_code(404);
+    $view->page_css_file = "pageLogin.css";
+    $view->page_signin_uri = $ctrl->getUri('SIGNIN_PAGE');
+    $view->page_signup_uri = $ctrl->getUri('SIGNUP_PAGE');
+    $view->page_form_box = $view->render("view/formSignIn.html.php");
+    $view->page_body = $view->render("view/pageBodyLoginTemplate.html.php");
     echo $view->render("view/pageTemplate.html.php");
     exit();
 }
 
 if ($page === Controller::SIGNUP_PAGE) {
-    // registration form functionality
-    $view->page_title = "Error 404 - Oops!";
-    $view->page_css_file = "pageNotFound.css";
-    $view->page_request_uri = $ctrl->getRequestUri();
-    $view->page_error_box = $view->render("view/errorNotFound.html.php");
-    $view->page_body = $view->render("view/pageBodyTemplate.html.php");
-    http_response_code(404);
+    if ($ctrl->isMethodPost()) {
+        $errors = $ctrl->checkSignUp();
+        if ($errors === null) {
+            // register and log in user (set session data) and redirect to main page
+            exit();
+        } else {
+            $view->page_error_messages = $errors;
+            $view->page_error_box = $view->render("view/errorSignUp.html.php");
+        }
+    }
+    $view->page_title = "Join TinyTweet · TinyTweet";
+    $view->page_css_file = "pageLogin.css";
+    $view->page_signin_uri = $ctrl->getUri('SIGNIN_PAGE');
+    $view->page_signup_uri = $ctrl->getUri('SIGNUP_PAGE');
+    $view->page_form_box = $view->render("view/formSignUp.html.php");
+    $view->page_body = $view->render("view/pageBodyLoginTemplate.html.php");
     echo $view->render("view/pageTemplate.html.php");
     exit();
 }

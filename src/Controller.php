@@ -105,4 +105,32 @@ final class Controller
         // TBC
         return false;
     }
+
+    final public function isMethodPost()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            return true;
+        }
+        return false;
+    }
+
+    final public function sentValidCredentials()
+    {
+        // TBC
+        return false;
+    }
+
+    final public function getUri($destination)
+    {
+        return ($this->basePath).constant('self::'.$destination)."/";
+    }
+
+    final public function checkSignUp()
+    {
+        // TBC
+        $errors[] = "<em>Username</em> field <strong>must not</strong> be empty.";
+        $errors[] = "<em>Email address</em> field <strong>must not</strong> be empty.";
+        $errors[] = "Password <strong>must not</strong> be empty.";
+        return $errors;
+    }
 }
