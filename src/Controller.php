@@ -9,6 +9,7 @@ final class Controller
     const TWEET_PAGE   = 'tweet';
     const SIGNUP_PAGE  = 'register';
     const SIGNIN_PAGE  = 'login';
+    const SIGNOUT_PAGE  = 'logout';
     const USER_PAGE    = 'user';
     const PROFILE_PAGE = 'profile';
     const MESSAGE_PAGE = 'message';
@@ -19,6 +20,7 @@ final class Controller
         self::TWEET_PAGE   => true,    // can show individual tweets by id
         self::SIGNUP_PAGE  => false,   // no parameters
         self::SIGNIN_PAGE  => false,   // no parameters
+        self::SIGNOUT_PAGE  => false,  // no parameters
         self::USER_PAGE    => true,    // can show user activity by user id
         self::PROFILE_PAGE => false,   // no parameters
         self::MESSAGE_PAGE => true,    // can show private messages by id
@@ -102,7 +104,10 @@ final class Controller
 
     final public function isUserAuthorized()
     {
-        // TBC
+        if (isset($_SESSION['userId'])) {
+            // may include additional check to see if such user exists in db
+            return true;
+        }
         return false;
     }
 
@@ -114,10 +119,20 @@ final class Controller
         return false;
     }
 
-    final public function sentValidCredentials()
+    final public function userSignIn()
     {
-        // TBC
-        return false;
+        if (isset($_POST['email']) && isset($_POST['pass']) ) {
+            // here we should consult User class methods to check user
+            // for now do it staticaly
+            if ($_POST['email'] === "jan@example.com"
+                && $_POST['pass'] === "go") {
+                $_SESSION['userId'] = 1;
+                $_SESSION['email'] = 'jan@example.com';
+                $_SESSION['nick'] = 'Jan';
+                return true;
+            }
+        }
+        return null;
     }
 
     final public function getUri($destination)
@@ -132,5 +147,17 @@ final class Controller
         $errors[] = "<em>Email address</em> field <strong>must not</strong> be empty.";
         $errors[] = "Password <strong>must not</strong> be empty.";
         return $errors;
+    }
+
+    final public function logOut() {
+        if (isset($_SESSION['logOut'])) {
+            $_SESSION = array();
+            return true;
+        }
+        if (isset($_SESSION['userId'])) {
+            $_SESSION = array ();
+            $_SESSION['logOut'] = 'true';
+        }
+        return false;
     }
 }

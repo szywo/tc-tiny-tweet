@@ -65,7 +65,7 @@ class Template
         $this->vars['page_base_path'] = "";
         $this->vars['page_css_file'] = "";
         $this->vars['page_menu_box'] = "";
-        $this->vars['page_error_box'] = "";
+        $this->vars['page_info_box'] = "";
         $this->vars['page_form_box'] = "";
         $this->vars['page_content_box'] = "";
         $this->vars['page_body'] = "";
