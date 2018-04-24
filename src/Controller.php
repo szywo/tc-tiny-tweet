@@ -13,8 +13,6 @@ final class Controller
     const PROFILE_PAGE = 'profile';
     const MESSAGE_PAGE = 'message';
 
-    private static $instance;
-
     private $pagesParameters = [
         self::TWEET_PAGE    => true,    // can show individual tweets by id
         self::SIGNUP_PAGE   => false,   // no parameters
@@ -32,8 +30,7 @@ final class Controller
     private $userId;
     private $authenticatedUser;
 
-    // we use Singleton for configuration data hence private constructor
-    final private function __construct()
+    final public function __construct()
     {
         // set base path for cases when script runs in subdir of a server
         // /basedir/script.php -> basedir/
@@ -72,14 +69,6 @@ final class Controller
             $this->pageName = '';
             $this->pageId = -1;
         }
-    }
-
-    final public static function getInstance()
-    {
-        if (self::$instance === null){
-            self::$instance = new Controller();
-        }
-        return self::$instance;
     }
 
     final public function getBasePath()
@@ -138,7 +127,7 @@ final class Controller
             // here we should consult User class methods to check user
             // for now do it staticaly
             if ($_POST['email'] === "jan@k.pl"
-                && $_POST['pass'] === "go") {
+                && $_POST['pass'] === "jan") {
                 $_SESSION['userId'] = 1;
                 $_SESSION['email'] = 'jan@k.pl';
                 $_SESSION['nick'] = 'Jan';
@@ -156,9 +145,9 @@ final class Controller
     final public function checkSignUp()
     {
         // TBC
-        $errors[] = "<em>Username</em> field <strong>must not</strong> be empty.";
-        $errors[] = "<em>Email address</em> field <strong>must not</strong> be empty.";
-        $errors[] = "Password <strong>must not</strong> be empty.";
+        $errors[] = "<em>Email address</em> <strong>must not</strong> be empty.";
+        $errors[] = "<em>Password</em> <strong>must not</strong> be empty.";
+        $errors[] = "<em>Nickname</em> <strong>must not</strong> be empty.";
         return $errors;
     }
 

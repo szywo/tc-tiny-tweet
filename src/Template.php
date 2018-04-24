@@ -35,13 +35,10 @@ namespace szywo\TinyTweet;
  *       echo $view-render("template_file_name.php");
  *
  * Modifications include:
- *   1. Making class Singleton - call static function to get its instance:
- *       $view = Template::getInstance();
- *
- *   2. Constructor pre defines some common variables to make it easier
+ *   1. Constructor pre defines some common variables to make it easier
  *      working with xdebug
  *
- *   3. Modified render functin so that all extracted variables have
+ *   2. Modified render functin so that all extracted variables have
  *      VAR_PREFIX (default "tpl_") prefix added (to avoid overwriting
  *      existing variables). Underscore is enforced by the way prefixing
  *      works in extract() function but it is good because camelCase variable
@@ -59,16 +56,15 @@ class Template
 {
     const VAR_PREFIX = 'tpl';
 
-    private static $instance;
     private $vars  = array();
 
     /**
-     * Private Constructor.
+     * Constructor.
      *
-     * Additionaly predefines some common variables for easier debugging.
+     * Predefines some common template variables for easier debugging.
      * That is no undefined variable warnings if something is ommited.
      */
-    private function __construct()
+    public function __construct()
     {
         $this->vars['title'] = "";
         $this->vars['basePath'] = "";
@@ -78,19 +74,6 @@ class Template
         $this->vars['formBox'] = "";
         $this->vars['contentBox'] = "";
         $this->vars['body'] = "";
-    }
-
-    /**
-     * Returns stored or new instance of Template.
-     *
-     * @return object Returns instance of Template;
-     */
-    public static function getInstance()
-    {
-        if (self::$instance === null){
-            self::$instance = new Template();
-        }
-        return self::$instance;
     }
 
     /**

@@ -14,6 +14,10 @@
             <div class="card-body">
                 <form action="<?= $tpl_signUpUri ?>" accept-charset="UTF-8" method="post">
                     <div class="form-group mb-4">
+                        <label class="px-1 mb-1" for="email"><strong>Name</strong></label>
+                        <input type="text" name="user" class="form-control" id="user" placeholder="Name to display">
+                    </div>
+                    <div class="form-group mb-4">
                         <label class="px-1 mb-1" for="email"><strong>Email address</strong></label>
                         <input type="email" name="email" class="form-control" id="email" placeholder="Enter email">
                     </div>
@@ -24,10 +28,6 @@
                     <div class="form-group mb-4">
                         <label class="px-1 mb-1" for="pass"><strong>Repeat password</strong></label>
                         <input type="password" name="pass2" class="form-control" id="pass2" placeholder="Repeat password">
-                    </div>
-                    <div class="form-group mb-4">
-                        <label class="px-1 mb-1" for="email"><strong>Nick name</strong></label>
-                        <input type="email" name="user" class="form-control" id="user" placeholder="Nickname to display">
                     </div>
                     <div class="form-group mb-1 mt-4 pt-2">
                         <input type="submit" name="register" class="btn btn-block btn-outline-primary btn-lg" id="submit" value="Sign up">

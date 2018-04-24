@@ -10,8 +10,8 @@ session_start();
 use szywo\TinyTweet\Template;
 use szywo\TinyTweet\Controller;
 
-$ctrl = Controller::getInstance();
-$view = Template::getInstance();
+$ctrl = new Controller();
+$view = new Template();
 $view->basePath = $ctrl->getBasePath();
 
 $page = $ctrl->getPageName();
