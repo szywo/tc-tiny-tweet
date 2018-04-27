@@ -46,6 +46,12 @@ namespace szywo\TinyTweet;
  *      tplcamelCase. Its one of rare cases where mixing naming conventions
  *      has positive outcome.
  *
+ *   3. Added automatic filtering (escaping) mechanism for variables.
+ *      It is so that Template class can adhere to automatic filtering based
+ *      on destination principle (that is, it we keep variables as raw values
+ *      as long as possible and use automated filtering based on intended
+ *      destination)
+ *
  * @author Chad Minick
  * @link http://chadminick.com/articles/simple-php-template-engine.html
  *
@@ -57,6 +63,9 @@ class Template
     const VAR_PREFIX = 'tpl';
 
     private $vars  = array();
+    private $rawVars = array();
+    private $defEncoding;
+    private $encodings = array();
 
     /**
      * Constructor.
@@ -66,14 +75,24 @@ class Template
      */
     public function __construct()
     {
+        $this->defEncoding = ENT_COMPAT|ENT_HTML5;
+        // default variables
         $this->vars['title'] = "";
         $this->vars['basePath'] = "";
         $this->vars['cssFile'] = "";
-        $this->vars['menuBox'] = "";
-        $this->vars['infoBox'] = "";
-        $this->vars['formBox'] = "";
-        $this->vars['contentBox'] = "";
-        $this->vars['body'] = "";
+        $this->vars['menuBoxTemplate'] = "";
+        $this->vars['infoBoxTemplate'] = "";
+        $this->vars['formBoxTemplate'] = "";
+        $this->vars['contentBoxTemplate'] = "";
+        $this->vars['bodyTemplate'] = "";
+        // set those variables as raw
+        $this->setRaw([
+            'menuBoxTemplate',
+            'infoBoxTemplate',
+            'formBoxTemplate',
+            'contentBoxTemplate',
+            'bodyTemplate'
+        ]);
     }
 
     /**
@@ -84,6 +103,9 @@ class Template
      */
     public function __get($name)
     {
+        if (array_key_exists($name, $this->rawVars)) {
+            return $this->rawVars[$name];
+        }
         return $this->vars[$name];
     }
 
@@ -99,7 +121,110 @@ class Template
         if ($name == 'view_template_file') {
             throw new Exception("Cannot bind variable named 'view_template_file'");
         }
-        $this->vars[$name] = $value;
+        // check if variable was already set as raw value
+        if (array_key_exists($name, $this->rawVars)) {
+            $this->rawVars[$name] = $value;
+        } else {
+            $this->vars[$name] = $value;
+        }
+    }
+
+    /**
+     * Sets variable as raw value so there will be no encoding
+     *
+     * @param string|string[] $name Variable name or array of variable names
+     * @return void
+     */
+    public function setRaw($name)
+    {
+        $names = array();
+        if (! is_array($name)) {
+            $names[] = $name;
+        } else {
+            $names = $name;
+        }
+        foreach ($names as $name) {
+            if (array_key_exists($name, $this->vars)) {
+                $this->rawVars[$name] = $this->vars[$name];
+                unset($this->vars[$name]);
+            } else {
+                // sets raw format for variable before it is "initialised"
+                $this->rawVars[$name] = '';
+            }
+        }
+    }
+
+    /**
+     * Sets variable as value to be encoded
+     *
+     * @param string|string[] $name Variable name
+     * @return void
+     */
+    public function unSetRaw($name)
+    {
+        $names = array();
+        if (! is_array($name)) {
+            $names[] = $name;
+        } else {
+            $names = $name;
+        }
+        foreach ($names as $name) {
+            if (array_key_exists($name, $this->rawVars)) {
+                $this->vars[$name] = $this->rawVars[$name];
+                unset($this->rawVars[$name]);
+            } // not "initialised" variables are encoded by default
+        }
+    }
+
+    /**
+     * Sets encoding used to process value
+     *
+     * @param string|string[] $name Variable name
+     * @param string $encoding htmlspecialhars() encoding type
+     * @return void
+     */
+    public function setEncoding($name, $encoding)
+    {
+        $names = array();
+        if (! is_array($name)) {
+            $names[] = $name;
+        } else {
+            $names = $name;
+        }
+        foreach ($names as $name) {
+            $this->encodings[$name];
+        }
+    }
+
+    /**
+     * Changes default encoding (ENT_COMPAT|ENT_HTML5)
+     *
+     * @param string $encoding htmlspecialhars() encoding type
+     * @return void
+     */
+    public function setDefaultEncoding($encoding)
+    {
+        $this->defEncoding = $encoding;
+    }
+
+    /**
+     * Recursively encodes variables in arrays
+     *
+     * @param mixed $var Variable to encode
+     * @param mixed $encoding Encoding type to use
+     * @return string|array Encoded string or array
+     */
+    private function encode($var, $encoding) {
+        $encodedVar = null;
+        if (is_object($var) || is_scalar($var)) {
+            $encodedVar = htmlspecialchars((string) $var, $encoding);
+        }
+        if (is_array($var)) {
+            foreach ($var as $key => $val) {
+                $encodedVar[$key] = $this->encode($val, $encoding);
+            }
+        }
+        return $encodedVar;
     }
 
     /**
@@ -114,7 +239,13 @@ class Template
         if (array_key_exists('view_template_file', $this->vars)) {
             throw new Exception("Cannot bind variable called 'view_template_file'");
         }
-        extract($this->vars, EXTR_PREFIX_ALL, self::VAR_PREFIX);
+        $encoded = array();
+        foreach ($this->vars as $name => $var) {
+            $encoding = $this->encodings[$name]??$this->defEncoding;
+            $encoded[$name] = $this->encode($var, $encoding);
+        }
+        extract($encoded, EXTR_PREFIX_ALL, self::VAR_PREFIX);
+        extract($this->rawVars, EXTR_PREFIX_ALL, self::VAR_PREFIX);
         ob_start();
         include($view_template_file);
         return ob_get_clean();

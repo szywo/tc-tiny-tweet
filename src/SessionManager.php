@@ -1,9 +1,8 @@
 <?php
 namespace szywo\TinyTweet;
 
-final class Controller
+final class SessionManager
 {
-    const SCRIPT_NAME = 'index.php';
 
     const TWEET_PAGE   = 'tweet';
     const SIGNUP_PAGE  = 'register';
@@ -23,6 +22,7 @@ final class Controller
         self::MESSAGE_PAGE  => true,    // can show private messages by id
     ];
 
+    private $scriptName;
     private $basePath;
     private $requestUri;
     private $pageName;
@@ -30,11 +30,12 @@ final class Controller
     private $userId;
     private $authenticatedUser;
 
-    final public function __construct()
+    final public function __construct(string $scriptName)
     {
+        $this->scriptName = basename($scriptName);
         // set base path for cases when script runs in subdir of a server
         // /basedir/script.php -> basedir/
-        $pattern = "/".self::SCRIPT_NAME."$/";
+        $pattern = "/".$this->scriptName."$/";
         $basePath = preg_replace($pattern, "", $_SERVER['SCRIPT_NAME']);
         $this->basePath = $basePath;
 
@@ -45,7 +46,7 @@ final class Controller
         $requestUri = preg_replace($pattern, "", $_SERVER['REQUEST_URI']);
 
         // exclude script's file name from leftover URI string if it's there
-        $pattern = "/^".self::SCRIPT_NAME."\/?/";
+        $pattern = "/^".$this->scriptName."\/?/";
         $requestUri = preg_replace($pattern, "", $requestUri);
         $this->requestUri = $requestUri;
 

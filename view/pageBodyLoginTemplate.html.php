@@ -1,6 +1,6 @@
 <div class="container-fluid pt-3 pt-sm-5">
-    <?= $tpl_menuBox ?>
-    <?= $tpl_infoBox ?>
-    <?= $tpl_formBox ?>
-    <?= $tpl_contentBox ?>
+    <?= $tpl_menuBoxTemplate ?>
+    <?= $tpl_infoBoxTemplate ?>
+    <?= $tpl_formBoxTemplate ?>
+    <?= $tpl_contentBoxTemplate ?>
 </div>

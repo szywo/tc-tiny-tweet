@@ -8,40 +8,40 @@ session_start();
 
 
 use szywo\TinyTweet\Template;
-use szywo\TinyTweet\Controller;
+use szywo\TinyTweet\SessionManager;
 
-$ctrl = new Controller();
+$session = new SessionManager(__FILE__);
 $view = new Template();
-$view->basePath = $ctrl->getBasePath();
+$view->basePath = $session->getBasePath();
 
-$page = $ctrl->getPageName();
+$page = $session->getPageName();
 
 // routing
-if ($ctrl->isUserAuthorized()) {
+if ($session->isUserAuthorized()) {
     // authenticated user's zone
     switch($page) {
         // already logged in or registered user goes to
-        case Controller::SIGNIN_PAGE:
-        case Controller::SIGNUP_PAGE:
-            header("Location: ".$ctrl->getBasePath());
+        case SessionManager::SIGNIN_PAGE:
+        case SessionManager::SIGNUP_PAGE:
+            header("Location: ".$session->getBasePath());
             break;
 
-        case Controller::SIGNOUT_PAGE:
-            $ctrl->logOut();
-            header("Location: ".$ctrl->getBasePath().Controller::SIGNIN_PAGE."/");
+        case SessionManager::SIGNOUT_PAGE:
+            $session->logOut();
+            header("Location: ".$session->getBasePath().SessionManager::SIGNIN_PAGE."/");
             break;
 
         case "":
-        case Controller::MESSAGE_PAGE:
-        case Controller::TWEET_PAGE:
-        case Controller::USER_PAGE:
-        case Controller::PROFILE_PAGE:
+        case SessionManager::MESSAGE_PAGE:
+        case SessionManager::TWEET_PAGE:
+        case SessionManager::USER_PAGE:
+        case SessionManager::PROFILE_PAGE:
         default:
             $view->title = "Error 404 - Oops!";
             $view->cssFile = "pageNotFound.css";
-            $view->requestUri = htmlentities("/".$ctrl->getRequestUri(), ENT_QUOTES|ENT_HTML5);
-            $view->infoBox = $view->render("view/infoErrorNotFound.html.php");
-            $view->body = $view->render("view/pageBodyTemplate.html.php");
+            $view->requestUri = "/".$session->getRequestUri();
+            $view->infoBoxTemplate = $view->render("view/infoErrorNotFound.html.php");
+            $view->bodyTemplate = $view->render("view/pageBodyTemplate.html.php");
             http_response_code(404);
             echo $view->render("view/pageTemplate.html.php");
             break;
@@ -51,53 +51,54 @@ if ($ctrl->isUserAuthorized()) {
     // unauthenticated users's zone
     switch ($page) {
 
-        case Controller::SIGNIN_PAGE:
+        case SessionManager::SIGNIN_PAGE:
             // login page
-            if ($ctrl->isMethodPost()) {
-                if ($ctrl->userSignIn() === true) {
-                    header("Location: ".$ctrl->getBasePath() );
+            if ($session->isMethodPost()) {
+                if ($session->userSignIn() === true) {
+                    header("Location: ".$session->getBasePath() );
                     exit();
                 } else {
-                    $view->infoBox = $view->render("view/infoErrorSignIn.html.php");
+                    $view->infoBoxTemplate = $view->render("view/infoErrorSignIn.html.php");
                 }
             } else {
-                if ($ctrl->logOut()) {
-                    $view->infoBox = $view->render("view/infoSuccessLogOut.html.php");
+                if ($session->logOut()) {
+                    $view->infoBoxTemplate = $view->render("view/infoSuccessLogOut.html.php");
                 }
             }
             $view->title = "Sign in to TinyTweet · TinyTweet";
             $view->cssFile = "pageLogin.css";
-            $view->signInUri = $ctrl->getUri('SIGNIN_PAGE');
-            $view->signUpUri = $ctrl->getUri('SIGNUP_PAGE');
-            $view->formBox = $view->render("view/formSignIn.html.php");
-            $view->body = $view->render("view/pageBodyLoginTemplate.html.php");
+            $view->signInUri = $session->getUri('SIGNIN_PAGE');
+            $view->signUpUri = $session->getUri('SIGNUP_PAGE');
+            $view->formBoxTemplate = $view->render("view/formSignIn.html.php");
+            $view->bodyTemplate = $view->render("view/pageBodyLoginTemplate.html.php");
             echo $view->render("view/pageTemplate.html.php");
             break; // login page end
 
-        case Controller::SIGNUP_PAGE:
+        case SessionManager::SIGNUP_PAGE:
             // new user registration page
-            if ($ctrl->isMethodPost()) {
-                $errors = $ctrl->checkSignUp();
+            if ($session->isMethodPost()) {
+                $errors = $session->checkSignUp();
                 if ($errors === null) {
                     // register and log in user (set session data) and redirect to main page
                     exit();
                 } else {
                     $view->errorMessages = $errors;
-                    $view->infoBox = $view->render("view/infoErrorSignUp.html.php");
+                    $view->setRaw('errorMessages');
+                    $view->infoBoxTemplate = $view->render("view/infoErrorSignUp.html.php");
                 }
             }
             $view->title = "Join TinyTweet · TinyTweet";
             $view->cssFile = "pageLogin.css";
-            $view->signInUri = $ctrl->getUri('SIGNIN_PAGE');
-            $view->signUpUri = $ctrl->getUri('SIGNUP_PAGE');
-            $view->formBox = $view->render("view/formSignUp.html.php");
-            $view->body = $view->render("view/pageBodyLoginTemplate.html.php");
+            $view->signInUri = $session->getUri('SIGNIN_PAGE');
+            $view->signUpUri = $session->getUri('SIGNUP_PAGE');
+            $view->formBoxTemplate = $view->render("view/formSignUp.html.php");
+            $view->bodyTemplate = $view->render("view/pageBodyLoginTemplate.html.php");
             echo $view->render("view/pageTemplate.html.php");
             break; // registration page end
 
         default:
         // unauthenticated users go to /login/ page
-        header("Location: ".$ctrl->getBasePath().Controller::SIGNIN_PAGE."/");
+        header("Location: ".$session->getBasePath().SessionManager::SIGNIN_PAGE."/");
 
     } // unauthenticated user's page switch end
 } // routing end

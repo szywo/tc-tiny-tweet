@@ -10,6 +10,6 @@
     <link rel="stylesheet" href="<?= ($tpl_basePath)."css/".($tpl_cssFile) ?>">
 </head>
 <body>
-    <?= $tpl_body ?>
+    <?= $tpl_bodyTemplate ?>
 </body>
 </html>
