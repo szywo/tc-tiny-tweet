@@ -1,5 +1,13 @@
 <?php
+/**
+ * TinyTweet app main controller.
+ *
+ * @package szywo\TinyTweet
+ * @author Szymon Wojdan
+ * @link https://github.com/szywo
+ */
 namespace szywo\TinyTweet;
+
 /* Composer autoloader */
 require __DIR__.'/vendor/autoload.php';
 
@@ -9,12 +17,22 @@ session_start();
 
 use szywo\TinyTweet\Template;
 use szywo\TinyTweet\SessionManager;
+use szywo\TinyTweet\RegexRouter;
 
 $session = new SessionManager(__FILE__);
 $view = new Template();
 $view->basePath = $session->getBasePath();
 
 $page = $session->getPageName();
+
+// $router = new RegexRouter();
+// $router->route('/^\/\/(\d+)\/?$/', function($category, $id){
+//     print "category={$category}, id={$id}";
+// });
+// $router->execute($_SERVER['REQUEST_URI']);
+
+
+
 
 // routing
 if ($session->isUserAuthorized()) {

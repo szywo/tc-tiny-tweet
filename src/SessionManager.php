@@ -56,6 +56,7 @@ final class SessionManager
         // note: exploding empty string returns one (empty) element array
         $requestedPage = explode("/",$requestUri);
 
+        // probably this should be router responsibility (TBD)
         //now check if valid page was requested
         if (array_key_exists($requestedPage[0], $this->pagesParameters)) {
             $this->pageName = $requestedPage[0];
@@ -80,6 +81,35 @@ final class SessionManager
     final public function getRequestUri()
     {
         return $this->requestUri;
+    }
+
+    final public function isMethodPost()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            return true;
+        }
+        return false;
+    }
+
+    final public function logOut() {
+        if (isset($_SESSION['logOut'])) {
+            $_SESSION = array();
+            return true;
+        }
+        if (isset($_SESSION['userId'])) {
+            $_SESSION = array ();
+            $_SESSION['logOut'] = 'true';
+        }
+        return false;
+    }
+
+
+
+
+    /// things that probably belong elsewhere -> routing, authentication, validation
+    final public function getUri($destination)
+    {
+        return ($this->basePath).constant('self::'.$destination)."/";
     }
 
     final public function getPageName()
@@ -114,14 +144,6 @@ final class SessionManager
         return false;
     }
 
-    final public function isMethodPost()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            return true;
-        }
-        return false;
-    }
-
     final public function userSignIn()
     {
         if (isset($_POST['email']) && isset($_POST['pass']) ) {
@@ -138,11 +160,6 @@ final class SessionManager
         return null;
     }
 
-    final public function getUri($destination)
-    {
-        return ($this->basePath).constant('self::'.$destination)."/";
-    }
-
     final public function checkSignUp()
     {
         // TBC
@@ -152,15 +169,4 @@ final class SessionManager
         return $errors;
     }
 
-    final public function logOut() {
-        if (isset($_SESSION['logOut'])) {
-            $_SESSION = array();
-            return true;
-        }
-        if (isset($_SESSION['userId'])) {
-            $_SESSION = array ();
-            $_SESSION['logOut'] = 'true';
-        }
-        return false;
-    }
 }
