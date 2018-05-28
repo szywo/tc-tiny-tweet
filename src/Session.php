@@ -6,8 +6,6 @@
  */
 namespace szywo\TinyTweet;
 
-use szywo\TinyTweet\Request;
-
 /**
  * Class managing session
  *
@@ -20,74 +18,253 @@ use szywo\TinyTweet\Request;
 class Session
 {
     /**
-    * Dependency: Request object
-    *
-    * @access private
-    * @var Request
-    */
-    private $request;
-
-    /**
-     * Base session parameters
+     * Secure session INI parameters
      *
      * @access private
      * @var array
+     * @see {@link http://php.net/manual/en/session.security.ini.php}
      */
-    private $sessionParameters = [
+    private $sessionSecureIniParameters = [
         'use_strict_mode'  => true,
         'use_cookies'      => true,
         'use_only_cookies' => true,
         'cookie_httponly'  => true,
+        'cookie_secure'    => true,
         'cookie_lifetime'  => 0,
     ];
 
     /**
-    * Session ID regeneration interval (seconds)
-    *
-    * @access private
-    * @var integer
-    * @see {@link http://php.net/manual/en/features.session.security.management.php}
-    */
+     * Default session name
+     *
+     * @access private
+     * @var string
+     * @see setSessionName()
+     */
+    private $defaultSessionName = 'PHPSESID';
+
+    /**
+     * $_SESSION security data index
+     *
+     * @access private
+     * @var string
+     * @see setSessionName()
+     */
+    private $securityIndex = 'SECURITY';
+
+    /**
+     * $_SESSION user data index
+     *
+     * @access private
+     * @var string
+     * @see setSessionName()
+     */
+    private $dataIndex = 'USER_DATA';
+
+    /**
+     * $_SESSION authentication data index
+     *
+     * @access private
+     * @var string
+     * @see setSessionName()
+     */
+    private $authIndex = 'USER_AUTH';
+
+    /**
+     * Maximum length of session name
+     *
+     * @access private
+     * @var integer
+     * @see setSessionName()
+     */
+    private $sessionNameMaxLength = 64;
+
+    /**
+     * Session ID regeneration interval (seconds)
+     *
+     * @access private
+     * @var integer
+     * @see {@link http://php.net/manual/en/features.session.security.management.php}
+     */
     private $sessionIdRegenerationInterval = 900;
 
     /**
-    * Obsolete session deletion delay (seconds) as suggested by PHP manual
-    *
-    * @access private
-    * @var integer
-    * @see {@link http://php.net/manual/en/function.session-destroy.php}
-    */
+     * Obsolete session deletion delay (seconds) as suggested by PHP manual
+     *
+     * @access private
+     * @var integer
+     * @see {@link http://php.net/manual/en/function.session-destroy.php}
+     */
     private $sessionTerminationDelay = 60;
 
     /**
-    * Session validation status
-    *
-    * @access private
-    * @var boolean
-    */
-    private $valid = false;
+     * Preffered hash algorithms in descending order of desirability
+     *
+     * @access private
+     * @var array
+     * @see {@link http://php.net/manual/en/function.hash-algos.php}
+     */
+    private $preferredHashAlgos = [
+        // not a finest sellection, further research required
+        'sha512',
+        'sha1',
+        'md5',
+    ];
 
     /**
-     * Constructor
+     * Session management object.
      *
-     * @param Request $r Request object (DI)
+     * Basicaly it substitutes session_start() but also provides some security
+     * measures described in {@link http://php.net/manual/en/features.session.security.management.php Session Management Basics}
+     *
+     * @param array $securityTokens Tokens for the session's name generation engine
+     * @param boolean $https Send session cookies only via HTTPS connection
      */
-    public function __construct(Request $r)
+    public function __construct(array $securityTokens = array(), boolean $https = true)
     {
-        $this->request = $r;
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            throw new Exception("Session error: Session already initiated.");
-        }
         if (session_status() === PHP_SESSION_DISABLED) {
             throw new Exception("Session error: Sessions disabled.");
         }
-        session_start($this->sessionParameters);
+        if ($https !== false && !$this->isHttpsOn()) {
+            throw new Exception("Session error: Secure cookies requested but connected via insecure channel.");
+        }
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            // throw new Exception("Session error: Session already initiated.");
+            // or we can be more gentle and quietly clear and kill existing
+            // session (also we could optionaly log this event)
+            if ($this->purge() !== true) {
+                throw new Exception("Session error: Can not destroy session initialized outside Session object.");
+            }
+            // now we can just start our session like this one never existed
+        }
+        $this->secureSessionIniParameters($https);
+        $this->setSessionName($securityTokens);
+        if (session_start() !== true) {
+            throw new Exception("Session error: Can not start new session.");
+        }
+
+
+        // TBC
         if (empty($_SESSION)) {
-            $this->initialise();
+            $this->init();
         } else {
             $this->resume();
         }
     }
+
+    /**
+     * Secures INI parameters for a session
+     *
+     * @param boolean $https Send session cookies only via HTTPS connection
+     * @return void
+     * @see $sessionSecureIniParameters
+     */
+    private function secureSessionIniParameters($https = true)
+    {
+        $sessionIniParameters = $this->sessionSecureIniParameters;
+        if ($https === false) {
+            $sessionIniParameters['cookie_secure'] = false;
+        }
+        foreach($sessionParameters as $key => $value) {
+            $name = "session.".$key;
+            if (ini_get($name) !== $value) {
+                if (ini_set($name, $value) === false) {
+                    throw new Exception("Session error: Can not set INI setting $name = $value");
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if request received through secure channel
+     *
+     * Many StackOverflow discusions suggests empty $_SERVER['HTTPS'] is
+     * not 100% indication of insecure channel esp. if proxies are involved.
+     * But it's out of scope of current project as it is test case, not
+     * a production ready code.
+     * @see {@link https://stackoverflow.com/questions/1175096/how-to-find-out-if-youre-using-https-without-serverhttps}
+     *
+     * @param void
+     * @return boolean True if request received throug secure channel
+     */
+    private function isHttpsOn()
+    {
+        if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Purge (kill/destroy/wipe) a session
+     *
+     * @param void
+     * @return boolean Returns true when session id and its '$_SESSION' data was destroyed
+     * @see {@link https://stackoverflow.com/a/509056/9418958}
+     */
+    private function purge()
+    {
+        $name = session_name();
+        $_SESSION = [];
+        $params = session_get_cookie_params();
+        setcookie($name, '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+        session_destroy();
+        if (session_status() === PHP_SESSION_NONE && session_id() === "" && empty($_SESSION)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+    * Return best available hash algorithm
+    *
+    * @param void
+    * @return string Hash algorithm mane as defined by hash_algos()
+    */
+    private function getPrefferedHashAlgo()
+    {
+        $availableAlgos = hash_algos();
+        if (empty($availableAlgos)) {
+            return null;
+        }
+        foreach ($this->preferedHashAlgos as $algo) {
+            if (in_array($algo, $availableAlgos, true)) {
+                return $algo;
+            }
+        }
+        return $availableAlgos[0];
+    }
+
+    /**
+     * Set session (cookie) name.
+     *
+     * If security tokens are provided they will be used to generate session name.
+     * Security token should stay constant on subsequent requests. Simple
+     * examples are $_SERVER['REMOTE_ADDR'] or $_SERVER['HTTP_USER_AGENT']
+     * but sometimes they may cause problems (proxies)
+     * @param array Array containing security tokens
+     * @return void
+     */
+    private function setSessionName(array $securityTokens)
+    {
+        $name = $this->defaultSessionName;
+        $algo = $this->getPrefferedHashAlgo();
+        if (!empty($securityTokens) && $algo !== null) {
+            $str = '';
+            foreach ($securityTokens as $token) {
+                $str .= $token;
+            }
+            $name = substr(hash($algo, $str), 0, $this->sessionNameMaxLength);
+        }
+        session_name($name);
+    }
+
+
+
+
+    // TBC ************************************************
 
     /**
     * Initialise session's user data
