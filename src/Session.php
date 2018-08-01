@@ -13,6 +13,13 @@ namespace szywo\TinyTweet;
  * However it is here almost ready to implement PHP's Manual Sessions
  * and Security hints {@link http://php.net/manual/en/session.security.php}
  *
+ * Possible improvements:
+ *  1. Preffered hash algorithm selection
+ *  2. Secure (https) chanel detection
+ *  3. Per user session management (ie. how to unauthenticate all sessions
+ *     opened by specific user)
+ *  4. Logging access to expired sessions sessions
+ *
  * @package szywo\TinyTweet
  */
 class Session
@@ -34,40 +41,13 @@ class Session
     ];
 
     /**
-     * Default session name
+     * Session name
      *
      * @access private
      * @var string
      * @see setSessionName()
      */
-    private $defaultSessionName = 'PHPSESID';
-
-    /**
-     * $_SESSION security data index
-     *
-     * @access private
-     * @var string
-     * @see setSessionName()
-     */
-    private $securityIndex = 'SECURITY';
-
-    /**
-     * $_SESSION user data index
-     *
-     * @access private
-     * @var string
-     * @see setSessionName()
-     */
-    private $dataIndex = 'USER_DATA';
-
-    /**
-     * $_SESSION authentication data index
-     *
-     * @access private
-     * @var string
-     * @see setSessionName()
-     */
-    private $authIndex = 'USER_AUTH';
+    private $sessionName = 'PHPSESID';
 
     /**
      * Maximum length of session name
@@ -79,13 +59,138 @@ class Session
     private $sessionNameMaxLength = 64;
 
     /**
+     * $_SESSION data container
+     *
+     * @access private
+     * @var array
+     */
+    private $sessionData = [];
+
+    /**
+     * Index of $_SESSSION for storing Session's internal data
+     *
+     * @access private
+     * @var string
+     */
+    private $idxSession = 'SESSION_DATA';
+
+    /**
+     * Index of $_SESSSION for storing Session's user data
+     *
+     * @access private
+     * @var string
+     */
+    private $idxData = 'USER_DATA';
+
+    /**
+     * Index of $_SESSSION for storing Session's user authentication data
+     *
+     * @access private
+     * @var string
+     */
+    private $idxAuth = 'AUTH_DATA';
+
+    /**
+     * Index of user's session start time
+     *
+     * @access private
+     * @var string
+     */
+    private $idxSessionStartTime = 'START_TIME';
+
+    /**
+     * Index of id generation time
+     *
+     * @access private
+     * @var string
+     */
+    private $idxSessionIdTime = 'ID_TIME';
+
+    /**
+     * Index of usrs's last access time
+     *
+     * @access private
+     * @var string
+     */
+    private $idxSessionAccessTime = 'ACCESS_TIME';
+
+    /**
+     * Index of id's obsoletion time
+     *
+     * @access private
+     * @var string
+     */
+    private $idxSessionObsoleteTime = 'OBSOLETE_TIME';
+
+    /**
+     * Index of new session's id
+     *
+     * @access private
+     * @var string
+     */
+    private $idxSessionNewId = 'NEW_SESSION_ID';
+
+    /**
+     * Index of authentication status
+     *
+     * @access private
+     * @var string
+     */
+    private $idxAuthStatus = 'STATUS';
+
+    /**
+     * Index of authentication additional data
+     *
+     * @access private
+     * @var string
+     */
+    private $idxAuthData = 'DATA';
+
+    /**
+     * Session's default data structure
+     *
+     * @access private
+     * @var array
+     */
+    private $defaultDataStructure = [
+        $this->idxSession => [
+            $this->idxSessionStartTime    => null,  // first arrival
+            $this->idxSessionIdTime       => null,  // time session current id was genereted
+            $this->idxSessionAccessTime   => null,  // last request time
+            $this->idxSessionObsoleteTime => null,  // time session id become obsolete
+            $this->idxSessionNewId        => null,  // assigned new session id
+        ],
+        $this->idxAuth    => [
+            $this->idxAuthStatus => false, // authentication status
+            $this->idxAuthData   => null,  // authentication addidtional user data
+        ],
+        $this->idxData    => null, // every other user data
+    ];
+
+    // /**
+    //  * Session data verification status
+    //  *
+    //  * @access private
+    //  * @var boolean
+    //  */
+    // private $sessionValid = false;
+
+    /**
+     * Time snapshoot to avoid some race contitions
+     *
+     * @access private
+     * @var integer
+     */
+    private $now = null;
+
+    /**
      * Session ID regeneration interval (seconds)
      *
      * @access private
      * @var integer
      * @see {@link http://php.net/manual/en/features.session.security.management.php}
      */
-    private $sessionIdRegenerationInterval = 900;
+    private $ttlId = 900;
 
     /**
      * Obsolete session deletion delay (seconds) as suggested by PHP manual
@@ -94,7 +199,7 @@ class Session
      * @var integer
      * @see {@link http://php.net/manual/en/function.session-destroy.php}
      */
-    private $sessionTerminationDelay = 60;
+    private $ttlObsoleteId = 60;
 
     /**
      * Preffered hash algorithms in descending order of desirability
@@ -116,38 +221,31 @@ class Session
      * Basicaly it substitutes session_start() but also provides some security
      * measures described in {@link http://php.net/manual/en/features.session.security.management.php Session Management Basics}
      *
-     * @param array $securityTokens Tokens for the session's name generation engine
      * @param boolean $https Send session cookies only via HTTPS connection
+     * @param array $securityTokens Tokens for the session's name generation engine
      */
-    public function __construct(array $securityTokens = array(), boolean $https = true)
+    public function __construct(boolean $https = true, array $securityTokens = array())
     {
-        if (session_status() === PHP_SESSION_DISABLED) {
-            throw new Exception("Session error: Sessions disabled.");
-        }
         if ($https !== false && !$this->isHttpsOn()) {
             throw new Exception("Session error: Secure cookies requested but connected via insecure channel.");
+        }
+        if (session_status() === PHP_SESSION_DISABLED) {
+            throw new Exception("Session error: Sessions disabled.");
         }
         if (session_status() === PHP_SESSION_ACTIVE) {
             // throw new Exception("Session error: Session already initiated.");
             // or we can be more gentle and quietly clear and kill existing
             // session (also we could optionaly log this event)
-            if ($this->purge() !== true) {
-                throw new Exception("Session error: Can not destroy session initialized outside Session object.");
-            }
+            $this->purge();
             // now we can just start our session like this one never existed
         }
         $this->secureSessionIniParameters($https);
         $this->setSessionName($securityTokens);
-        if (session_start() !== true) {
-            throw new Exception("Session error: Can not start new session.");
-        }
-
-
-        // TBC
-        if (empty($_SESSION)) {
+        $this->start();
+        while (!$this->sessionSecure()) {}
+        if (empty($this->getSession())) {
+            // new or freshly reinitialised session
             $this->init();
-        } else {
-            $this->resume();
         }
     }
 
@@ -165,7 +263,7 @@ class Session
             $sessionIniParameters['cookie_secure'] = false;
         }
         foreach($sessionParameters as $key => $value) {
-            $name = "session.".$key;
+            $name = "session.{$key}";
             if (ini_get($name) !== $value) {
                 if (ini_set($name, $value) === false) {
                     throw new Exception("Session error: Can not set INI setting $name = $value");
@@ -194,16 +292,32 @@ class Session
         return false;
     }
 
+
+    /**
+     * Start a session
+     *
+     * @param void
+     * @return void
+     */
+    private function start();
+    {
+        if (session_start() === true) {
+            return;
+        }
+        throw new Exception("Session error: Can not start new session.");
+    }
+
     /**
      * Purge (kill/destroy/wipe) a session
      *
      * @param void
-     * @return boolean Returns true when session id and its '$_SESSION' data was destroyed
+     * @return void
      * @see {@link https://stackoverflow.com/a/509056/9418958}
      */
     private function purge()
     {
         $name = session_name();
+        $this->sessionData = [];
         $_SESSION = [];
         $params = session_get_cookie_params();
         setcookie($name, '', time() - 42000,
@@ -211,17 +325,41 @@ class Session
             $params["secure"], $params["httponly"]
         );
         session_destroy();
-        if (session_status() === PHP_SESSION_NONE && session_id() === "" && empty($_SESSION)) {
-            return true;
+        if (session_status() === PHP_SESSION_NONE
+            && session_id() === ""
+            && empty($_SESSION)
+            && empty($this->sessionData)
+        ) {
+            return;
         }
-        return false;
+        throw new Exception("Session error: Can not destroy session.");
+    }
+
+    /**
+     * Create new ssession id
+     *
+     * @param void
+     * @return string New session id
+     * @see {@link https://stackoverflow.com/a/509056/9418958}
+     */
+    private function createId()
+    {
+        // php version isn't high enough
+        $oldId = session_id();
+        session_regenerate_id();
+        $newId = session_id();
+        session_commit();
+        session_id($oldId);
+        session_start();
+        return $newId;
+
     }
 
     /**
     * Return best available hash algorithm
     *
     * @param void
-    * @return string Hash algorithm mane as defined by hash_algos()
+    * @return string Hash algorithm name as defined by hash_algos()
     */
     private function getPrefferedHashAlgo()
     {
@@ -244,44 +382,171 @@ class Session
      * Security token should stay constant on subsequent requests. Simple
      * examples are $_SERVER['REMOTE_ADDR'] or $_SERVER['HTTP_USER_AGENT']
      * but sometimes they may cause problems (proxies)
-     * @param array Array containing security tokens
+     * @param array $securityTokens Array containing security tokens
      * @return void
      */
-    private function setSessionName(array $securityTokens)
+    private function setSessionName(array $securityTokens = array())
     {
-        $name = $this->defaultSessionName;
         $algo = $this->getPrefferedHashAlgo();
-        if (!empty($securityTokens) && $algo !== null) {
+        if (!empty($securityTokens) && in_array($algo, hash_algos()) {
             $str = '';
             foreach ($securityTokens as $token) {
                 $str .= $token;
             }
-            $name = substr(hash($algo, $str), 0, $this->sessionNameMaxLength);
+            $this->sessionName = substr(hash($algo, $str), 0, $this->sessionNameMaxLength);
         }
-        session_name($name);
+        session_name($this->sessionName);
     }
 
+    /**
+    * Runs session security checks
+    *
+    * @param void
+    * @return boolean True if session is empty or security verification was positive
+    */
+    private function sessionSecure()
+    {
+        if ($this->now === null) {
+            $this->now = time();
+        }
+        if (empty($this->getSession()) {
+            return true;
+        }
+        if (!$this->isDataStructureCorrect($this->getSession(), $this->defaultDataStructure)) {
+            // incorrect data structure (manipulated session?, should log?)
+            $this->purge();
+            $this->start();
+            return true;
+        }
+        $obsoleteTime = $this->getSessionObsoleteTime();
+        if ($obsoleteTime === 0) {
+            $idTime = $this->getSessionIdTime();
+            if ($idTime + $this->ttlId < $this->now) {
+                // time to regenerate id
+                $this->setSessionObsoleteTime($this->now);
+                $newId = $this->createId();
+                $this->setSessionNewId($newId);
+                $session = $this->getSession();
+                session_commit();
+                session_id($newId);
+                session_start();
+                $this->setSession($session);
+                $this->setSessionNewId(null);
+                $this->setSessionIdTime($this->now);
+                $this->setSessionObsoleteTime(null);
+            }
+            return true;
+        }
+        if ($obsoleteTime + $this->ttlObsoleteId < $this->now) {
+            // fully expired session access (optionally add logging)
+            $this->purge();
+            $this->start();
+            return true;
+        }
+        // not fully expired session access
+        $oldId = session_id();
+        $newId = $this->getSessionNewId();
+        session_commit();
+        session_id($newId);
+        session_start();
+        return false;
+
+    }
+
+
+
+    // To consider separation of following methods as data structure from session control
+
+    /**
+    * Get all session data ($_SESSION)
+    *
+    * @param void
+    * @return array Complete $_SESSSION array
+    */
+    private function getSession()
+    {
+        return $_SESSION;
+    }
+
+    /**
+    * Get time when session was marked as obsolete
+    *
+    * @param void
+    * @return integer Session obsolete time or 0 (if not obsolete)
+    */
+    private function getSessionObsoleteTime()
+    {
+        $obsoleteTime = ($this->session())[$this->idxSession][$this->idxSessionObsoleteTime];
+        if ( $obsoleteTime === null || intval($obsoleteTime) <= 0) {
+            return 0;
+        }
+        return intval($obsoleteTime);
+    }
+
+    /**
+    * Get time when session id was generated
+    *
+    * @param void
+    * @return integer Session id creation time or 0 (if not available)
+    */
+    private function getSessionIdTime()
+    {
+        $idTime = ($this->session())[$this->idxSession][$this->idxSessionIdTime];
+        if ( $idTime === null || intval($idTime) <= 0) {
+            return 0;
+        }
+        return intval($idTime);
+    }
+
+    /**
+     * Checks if $data array key structure match $pattern array (multidimensional)
+     *
+     * @param array $data Array to check
+     * @param array $pattern Template array
+     * @return boolean True when every key from $pattern present in $data
+     */
+    private function isDataStructureCorrect(array $data, array $pattern)
+    {
+        if (empty($data) && !empty($pattern)) {
+            return false;
+        }
+        foreach ($pattern as $key => $value) {
+            if (!array_key_exists($key, $data)) {
+                return false;
+            }
+            if (is_array($value) && !$this->isDataStructureCorrect($data[$key], $value)) {
+                return false;
+            }
+            // unset key already checked
+            unset($data[$key]);
+        }
+        if (!empty[$data]) {
+            // check if there are any keys left (unwanted, injected? data)
+            return false;
+        }
+        return true;
+    }
 
 
 
     // TBC ************************************************
 
     /**
-    * Initialise session's user data
-    *
-    * @return void
-    */
+     * Initialise session's user data
+     *
+     * @return void
+     */
     public function initUserData()
     {
         $_SESSION['data'] = array();
     }
 
     /**
-    * Check if session's user data is set
-    *
-    * @param string $name  Session variable name
-    * @return boolean
-    */
+     * Check if session's user data is set
+     *
+     * @param string $name  Session variable name
+     * @return boolean
+     */
     public function isSet(string $name)
     {
         if (array_key_exists($name, $_SESSION['data'])) {

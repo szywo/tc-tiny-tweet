@@ -8,7 +8,9 @@
     },
     "autoload": {
         "psr-4": {
-            "szywo\\TinyTweet\\": "src/"
+            "szywo\\TinyTweet\\": "src/TinyTweet",
+            "moagrius\\": "src/moagrius",
+            "chadminick\\": "src/chadminick"
         }
     },
     "license": "BSD 3-Clause License",
