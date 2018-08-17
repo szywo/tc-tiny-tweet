@@ -13,5 +13,6 @@
 </head>
 <body>
     <?= $tpl_bodyTemplate ?>
+
 </body>
 </html>

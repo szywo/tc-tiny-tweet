@@ -7,7 +7,7 @@ Implementation of tweeter-like application as an exercise on database and object
 
 Security is not a topic of this exercise so beside absolutly basic measures (using sessions) there are no other features concerning security (secure login/transport path/integrity etc.).
 
-#### :white_check_mark: Implementation progress (not ordered list)
+#### :white_check_mark: Implementation progress (unordered list)
 
 - [x] Url rewriting
 - [ ] Session/authentication (see disclaimer above)

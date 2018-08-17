@@ -1,15 +1,15 @@
 <?php
 /**
- * @package szywo\TinyTweet
+ * @package szywo\tinytweet
  * @author Szymon Wojdan
  * @link https://github.com/szywo/tc-tiny-tweet
  */
-namespace szywo\TinyTweet;
+namespace szywo\tinytweet;
 
 /**
  * Helper class to process requests
  *
- * @package szywo\TinyTweet
+ * @package szywo\tinytweet
  */
 class Request
 {
@@ -78,16 +78,32 @@ class Request
         }
     }
 
+    /**
+     * Function returns part of URI containing base path where main controller is located
+     *
+     * @return string Main controller path
+     */
     public function getBasePath()
     {
         return $this->basePath;
     }
 
+    /**
+     * Function returns part of URI relative to main controller's base path
+     *
+     * @return string
+     * @see {@link basePath()}
+     */
     public function getRequestUri()
     {
         return $this->requestUri;
     }
 
+    /**
+     * Function returns true if request method is POST
+     *
+     * @return boolean
+     */
     public function isMethodPost()
     {
         if ($this->requestMethod === 'POST') {
