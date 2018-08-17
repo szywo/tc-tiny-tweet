@@ -8,7 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "szywo\\TinyTweet\\": "src/TinyTweet",
+            "szywo\\tinytweet\\": "src/tinytweet",
             "moagrius\\": "src/moagrius",
             "chadminick\\": "src/chadminick"
         }

@@ -1,8 +1,8 @@
 <?php
-namespace szywo\TinyTweet;
+namespace chadminick;
 
 /**
- * Modified Chad Minick's Simple PHP Templating Engine.
+ * Chad Minick's Simple PHP Templating Engine.
  *
  * Simple PHP Templating Engine proposed by Chad Minick alowed simple, but
  * effective separation of application logic from its presentation.
@@ -11,20 +11,20 @@ namespace szywo\TinyTweet;
  * To use variable - for example page title:
  *
  *   1. in template file use:
- *       <title><?= $tpl_title ?></title>
+ *       <title><?= $(prefix)_title ?></title>
  *
- *   2. in controller:
+ *   2. in controller assign value to variable:
  *       $view->title = "My title";
  *
  *   3. in controler render page:
- *       echo $view-render("template_file_name.php");
+ *       echo $view->render("template_file_name.php");
  *
  *
  * To use additional sub-templates, for example for <body> content:
  *
  *   1. in template file use:
  *       <body>
- *           <?= $tpl_body ?>
+ *           <?= $(prefix)_body ?>
  *       </body>
  *
  *   2. in controller (after setting all variables needed in <body>)
@@ -34,32 +34,38 @@ namespace szywo\TinyTweet;
  *   3. finaly, in controler, render page:
  *       echo $view->render("template_file_name.php");
  *
- * Modifications include:
- *   1. Constructor pre defines some common variables to make it easier
- *      working with xdebug
+ * @author Chad Minick
+ * @link http://chadminick.com/articles/simple-php-template-engine.html
  *
- *   2. Modified render functin so that all extracted variables have
- *      VAR_PREFIX (default "tpl_") prefix added (to avoid overwriting
+ * Modifications:
+ *   1. Modified render functin so that all extracted variables have
+ *      $prefix (default "tpl_") prefix added (to avoid overwriting
  *      existing variables). Underscore is enforced by the way prefixing
  *      works in extract() function but it is good because camelCase variable
  *      names are prefixed in very distinctive way: tpl_camelCase instead of
  *      tplcamelCase. Its one of rare cases where mixing naming conventions
  *      has positive outcome.
+ *   2. Added documentation
  *
- *   3. Added automatic filtering (escaping) mechanism for variables.
- *      It is so that Template class can adhere to automatic filtering based
- *      on destination principle (that is, it we keep variables as raw values
- *      as long as possible and use automated filtering based on intended
- *      destination)
- *
- * @author Chad Minick
- * @link http://chadminick.com/articles/simple-php-template-engine.html
+ * @author Szymon Wojdan
  */
 class Template
 {
-    const VAR_PREFIX = 'tpl';
+    /**
+     * Prefix added to all declared variables before template is rendered
+     *
+     * @access private
+     * @var string
+     */
+    private $prefix = 'tpl';
 
-    private $vars  = array();
+    /**
+     * Associative array of variables needed for template
+     *
+     * @access private
+     * @var array
+     */
+   private $vars  = array();
 
     /**
      * Magic function to get value of variable.
@@ -96,7 +102,7 @@ class Template
         if(array_key_exists('view_template_file', $this->vars)) {
             throw new Exception("Cannot bind variable called 'view_template_file'");
         }
-        extract($this->vars, EXTR_PREFIX_ALL, self::VAR_PREFIX);
+        extract($this->vars, EXTR_PREFIX_ALL, $this->prefix);
         ob_start();
         include($view_template_file);
         return ob_get_clean();

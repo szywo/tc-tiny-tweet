@@ -2,5 +2,4 @@
 /samples/
 /log/
 /vendor/
-composer.lock
 .gitignore

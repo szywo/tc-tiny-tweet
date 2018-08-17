@@ -4,6 +4,7 @@
 Implementation of tweeter-like application as an exercise on database and object oriented programming integration. Functionality shoud include login, register, view/post tweets, view/post comments, send/receive private messagges. Only login and register forms should be available for not logged-in users (publicly available), other views/forms sould be for logged-in users only (private). Additionaly I'm going to adhere to [php-fig.org recomendations](https://www.php-fig.org).
 
 :exclamation: **SECURITY DISCLAIMER: This project is not intended for production environment** :exclamation:
+
 Security is not a topic of this exercise so beside absolutly basic measures (using sessions) there are no other features concerning security (secure login/transport path/integrity etc.).
 
 #### :white_check_mark: Implementation progress

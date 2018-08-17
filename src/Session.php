@@ -286,7 +286,7 @@ class Session
      */
     private function isHttpsOn()
     {
-        if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
+        if (isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) !== 'off')) {
             return true;
         }
         return false;
