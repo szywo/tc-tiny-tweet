@@ -10,7 +10,7 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 #### :heavy_check_mark: Implementation progress (unordered list)
 
 - [x] Url rewriting
-- [ ] Session/authentication (see disclaimer above)
+- [x] Session/authentication (see disclaimer above)
 - [x] Routing
 - [x] Template engine
 - [ ] Page templates
@@ -18,6 +18,7 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 - [ ] Application Logic
 
 #### :paperclip: Notes
+These are to log research effort I put into this project and also as a reference fordevelopment  choices I made. 
 
 ##### mod_rewrite
 Important part to remember is that, contrary to the order of placement, `RewriteRule` matching takes precedence before `RewriteCond` matching. So if `RewriteRule` pattern does not catch desired url then `RewriteCond` is not even tried. I've learned that by reading through mod_rewrite logs first and then finding [Ruleset Processing](https://httpd.apache.org/docs/2.4/rewrite/tech.html#InternalRuleset) page. I strongly recomend using `LogLevel` directive for testing rewrite rules. Its only drawback is that it cannot be used in `.htaccess` file, so it usually means that you have to setup your own LAMP server. But that is the way it should be done because excessive logging decreases server's performance.
@@ -37,4 +38,9 @@ $router->route(
 );
 $router->execute($_SERVER['REQUEST_URI']);
 ```
-It is not perfect but it is simple and versalite enough to suit this project. My problem with this solution is that using closures makes route execution code visible in main controler (I would prefer to keep it elsewhere like separate class) and that I need to use `function() use () {}` to inherit variables from parent scope (but, I assume, other solutions might have similar problem). Only change I made in RegexRouter class is adition of namespace. I left orginal global docblock and did not add any to properties and methods as the code is so short that additional comments might decrease its legibility.
+It is not perfect but it is simple and versalite enough to suit this project. My problem with this solution is that using closures makes route execution code visible in main controler (I would prefer to keep it elsewhere like separate class) and that I need to use `function () use () {}` to inherit variables from parent scope (but, I assume, other solutions might have similar problem). Only change I made in RegexRouter class is addition of namespace. I left orginal global docblock and did not add any to properties and methods as the code is so short that additional comments might decrease its legibility.
+
+##### Sessions
+As stated before security is not topic of this project, but after reading of [Securing Session INI Settings](http://php.net/manual/en/session.security.ini.php), [Session Management Basics](http://php.net/manual/en/features.session.security.management.php), [session_regenerate_id()](http://php.net/manual/en/function.session-regenerate-id.php), [session_create_id()](http://php.net/manual/en/function.session-create-id.php) and also [Truly destroying a PHP Session?](https://stackoverflow.com/a/509056/9418958) it seems reasonable to encapsulate all session data and validation in separate object. Upon initialisation object should check if sessions are enabled, secure ini parameters, validate session (detect obsolete ones, regenerate id, etc.) and finally transfer all $_SESSION data to its private properties (to hide validation parameters from user). Any interaction with $_SESSION's data should be caried via this object and at script's end object shoud ensure storing all data in $_SESSION. Apart from that it shoud use custom save handlers as standard ones (AFAIK) does not allow to meet following requirement:
+> If user accesses to obsolete session(expired session), deny access to it. It is recommended to remove authenticated status **from all** of the users' session because it is likely an attack.
+For now my implementation touches only tip of an iceberg.
