@@ -10,7 +10,8 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 #### :heavy_check_mark: Implementation progress (unordered list)
 
 - [x] Url rewriting
-- [x] Session/authentication (see disclaimer above)
+- [x] Session (see disclaimer above)
+    - [ ] Authentication
 - [x] Routing
 - [x] Template engine
 - [ ] Page templates
@@ -41,7 +42,10 @@ $router->execute($_SERVER['REQUEST_URI']);
 It is not perfect but it is simple and versalite enough to suit this project. My problem with this solution is that using closures makes route execution code visible in main controler (I would prefer to keep it elsewhere like separate class) and that I need to use `function () use () {}` to inherit variables from parent scope (but, I assume, other solutions might have similar problem). Only change I made in RegexRouter class is addition of namespace. I left orginal global docblock and did not add any to properties and methods as the code is so short that additional comments might decrease its legibility.
 
 ##### Sessions
-As stated before security is not topic of this project, but after reading of [Securing Session INI Settings](http://php.net/manual/en/session.security.ini.php), [Session Management Basics](http://php.net/manual/en/features.session.security.management.php), [session_regenerate_id()](http://php.net/manual/en/function.session-regenerate-id.php), [session_create_id()](http://php.net/manual/en/function.session-create-id.php) and also [Truly destroying a PHP Session?](https://stackoverflow.com/a/509056/9418958) it seems reasonable to encapsulate all session data and validation in separate object. Upon initialisation object should check if sessions are enabled, secure ini parameters, validate session (detect obsolete ones, regenerate id, etc.) and finally transfer all $_SESSION data to its private properties (to hide validation parameters from user). Any interaction with $_SESSION's data should be caried via this object and at script's end object shoud ensure storing all data in $_SESSION. Apart from that it shoud use custom save handlers as standard ones (AFAIK) does not allow to meet following requirement:
+As stated before security is not topic of this project, but after reading of [Securing Session INI Settings](http://php.net/manual/en/session.security.ini.php), [Session Management Basics](http://php.net/manual/en/features.session.security.management.php), [session_regenerate_id()](http://php.net/manual/en/function.session-regenerate-id.php), [session_create_id()](http://php.net/manual/en/function.session-create-id.php) and also [Truly destroying a PHP Session?](https://stackoverflow.com/a/509056/9418958) it seems reasonable to encapsulate all session data and validation in separate object. Upon initialisation object should check if sessions are enabled, secure ini parameters, validate session (detect obsolete ones, regenerate id, etc.) and finally transfer all `$_SESSION` data to its private properties (to hide validation parameters from user). Any interaction with `$_SESSION`'s data should be caried via this object and at script's end object shoud ensure storing all data in `$_SESSION`. Apart from that it shoud use custom save handlers as standard ones (AFAIK) does not allow to meet following requirement:
 > If user accesses to obsolete session(expired session), deny access to it. It is recommended to remove authenticated status **from all** of the users' session because it is likely an attack.
 
 For now my implementation touches only tip of an iceberg.
+
+##### Dynamic properties - magic `__set` and `__get` methods
+There are discussions about best practices of using or not magic `__set` and `__get` functions and there are provided [good points](https://www.masterzendframework.com/php/php-magic-methods-or-not/) not to use them ~~but in case of an object that is supposed to deliver data (like my Session) I agree with arguments provided in~~ [~~this reply~~](https://stackoverflow.com/a/6185525). On second tought I've decided to opt out of magic function use, especially that I'll make separate class for authentication that will just use Session class as dependency.

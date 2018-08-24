@@ -61,7 +61,12 @@ class Session
     }
 
     /**
-     * Start
+     * Start session and do security checks
+     *
+     * This is placeholder for serious security checks (for the future, as
+     * security is not goal of this project). It should implement recomendations
+     * from {@link http://php.net/manual/en/session.security.ini.php Securing Session INI Settings}
+     * and {@link http://php.net/manual/en/features.session.security.management.php Session Management Basics}
      *
      * @param void
      * @return void
@@ -69,7 +74,8 @@ class Session
     protected function secureSessionStart()
     {
         $this->start();
-        $this->getSessionData();
+        // here shoud go security checks
+        $this->fetchSessionData();
     }
 
     /**
@@ -92,7 +98,7 @@ class Session
      * @param void
      * @return void
      */
-    protected function getSessionData()
+    protected function fetchSessionData()
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
             $this->data = $_SESSION;
@@ -110,7 +116,7 @@ class Session
      * @return void
      * @see {@link https://stackoverflow.com/a/509056/9418958}
      */
-    private function purge()
+    protected function purge()
     {
         $this->data = array();
         $_SESSION = array();
@@ -167,34 +173,24 @@ class Session
     }
 
     /**
-     * Magic setter for session data
+     * Sets session data
      *
-     * Magic functions allow for setting and getting session data.
-     * There are discussions about best practices of using or not magic
-     * __set and __get functions but in this case I agree with arguments
-     * provided in this reply: {@link https://stackoverflow.com/a/6185525}
-     *
-     * @param string $name Name of variable (property)
+     * @param string $name Name of session variable
      * @param mixed $value Value to be set
      * @return void
      */
-    public function __set($name, $value)
+    protected function set($name, $value)
     {
         $this->data[$name] = $value;
     }
 
     /**
-     * Magic getter for session data
+     * Gets session data
      *
-     * Magic functions allow for setting and getting session data.
-     * There are discussions about best practices of using or not magic
-     * __set and __get functions but in this case I agree with arguments
-     * provided in this reply: {@link https://stackoverflow.com/a/6185525}
-     *
-     * @param string $name Name of variable (property)
-     * @return mixed
+     * @param string $name Name of session variable
+     * @return mixed Value of session data or null
      */
-    public function __get($name)
+    protected function get($name)
     {
         if (array_key_exists($name, $this->data)) {
             return $this->data[$name];
@@ -203,22 +199,22 @@ class Session
     }
 
     /**
-     * Magic function for checking existence of variable (property)
+     * Checks existence of session variable
      *
-     * @param string $name Name of variable (property)
+     * @param string $name Name of session variable
      * @return boolean
      */
-    public function __isset($name)
+    public function isset($name)
     {
         return isset($this->data[$name]);
     }
 
     /**
-     * Magic function for unsetting variable (property)
+     * Unsets session variable
      *
-     * @param string $name Name of variable (property)
+     * @param string $name Name of session variable
      */
-    public function __unset($name)
+    public function unset($name)
     {
         unset($this->data[$name]);
     }
