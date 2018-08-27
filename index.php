@@ -20,13 +20,16 @@ $view->basePath = $request->getBasePath();
 $router = new \moagrius\RegexRouter();
 
 if ($auth->getUser() === null) {
+    $view->registerUri = "register/";
+    $view->loginUri = "login/";
 
     // registration form path
     $router->route(
         '/^register\/$/',
         function() use (&$view) {
             $view->title = "Register · Tiny Tweet";
-            $view->bodyTemplate = "<h1>Please register!</h1>";
+            $view->formBoxTemplate = $view->render('view/formRegister.html.php');
+            $view->bodyTemplate = $view->render('view/pageBodyLoginTemplate.html.php');
         }
     );
 
@@ -39,11 +42,11 @@ if ($auth->getUser() === null) {
                 header('Location: '.$request->getBasePath());
             }
             $view->title = "Login · Tiny Tweet";
-            $loginPath = $request->getBasePath()."login/";
+            $view->formBoxTemplate = $view->render('view/formLogin.html.php');
             if ($auth->isRecentLogout()) {
-                $message = "<h4>Succesfully loged out</h4>";
+                $view->infoBoxTemplate = $view->render('view/infoSuccessLogOut.html.php');
             }
-            $view->bodyTemplate = ($message??"")."<h1>Please login!</h1><form accept-charset=\"UTF-8\" method=\"post\"><div class=\"form-group mb-1 mt-4 pt-2\"><input type=\"submit\" name=\"register\" class=\"btn btn-block btn-outline-primary btn-lg\" id=\"submit\" value=\"Sign up\"></div></form>";
+            $view->bodyTemplate = $view->render('view/pageBodyLoginTemplate.html.php');
         }
     );
 
@@ -69,12 +72,13 @@ if ($auth->getUser() === null) {
     // fall back route
     $router->route(
         '/^.*$/',
-        function() use (&$view, $auth, $request) {
+        function() use (&$view, $request) {
             http_response_code(404);
+            $view->requestUri = $request->getRequestUri();
             $view->title = "404 Not Found · Tiny Tweet";
-            $requestPath = $request->getBasePath().$request->getRequestUri();
-            $user = $auth->getUser();
-            $view->bodyTemplate = "<h1>My apologies $user but requested uri: $requestPath was not found on this server.</h1>";
+            $view->cssFile = 'pageNotFound.css';
+            $view->infoBoxTemplate = $view->render('view/infoErrorNotFound.html.php');
+            $view->bodyTemplate = $view->render('view/pageBodyTemplate.html.php');
         }
     );
 
@@ -83,4 +87,4 @@ if ($auth->getUser() === null) {
 // routing end
 $router->execute($request->getRequestUri());
 
-echo $view->render("view/pageTemplate.html.php");
+echo $view->render('view/pageTemplate.html.php');

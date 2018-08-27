@@ -15,6 +15,10 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 - [x] Routing
 - [x] Template engine
 - [ ] Page templates
+    - [x] Login
+    - [x] Register
+    - [x] 404
+    - [ ] ...
 - [ ] Database Access
 - [ ] Application Logic
 
