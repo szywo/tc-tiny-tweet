@@ -7,6 +7,11 @@ Implementation of tweeter-like application as an exercise on database and object
 
 Security is not a topic of this exercise so beside absolutly basic measures (using sessions) there are no other features concerning security (secure login/transport path/integrity etc.).
 
+#### :wrench: Requirements
+- Apache (http) server with mod_rewrite (that is allows `.htaccess` file per directory)
+- php 7 - templates use null coalescing operator (`??`)
+- MySQL database
+
 #### :heavy_check_mark: Implementation progress (unordered list)
 
 - [x] Url rewriting
