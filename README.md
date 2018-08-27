@@ -11,7 +11,7 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 
 - [x] Url rewriting
 - [x] Session (see disclaimer above)
-    - [ ] Authentication
+    - [x] Authentication
 - [x] Routing
 - [x] Template engine
 - [ ] Page templates
@@ -48,4 +48,7 @@ As stated before security is not topic of this project, but after reading of [Se
 For now my implementation touches only tip of an iceberg.
 
 ##### Dynamic properties - magic `__set` and `__get` methods
-There are discussions about best practices of using or not magic `__set` and `__get` functions and there are provided [good points](https://www.masterzendframework.com/php/php-magic-methods-or-not/) not to use them ~~but in case of an object that is supposed to deliver data (like my Session) I agree with arguments provided in~~ [~~this reply~~](https://stackoverflow.com/a/6185525). On second tought I've decided to opt out of magic function use, especially that I'll make separate class for authentication that will just use Session class as dependency.
+There are discussions about best practices of using or not magic `__set` and `__get` functions and there are provided [good points](https://www.masterzendframework.com/php/php-magic-methods-or-not/) not to use them ~~but in case of an object that is supposed to deliver data (like my Session) I agree with arguments provided in~~ [~~this reply~~](https://stackoverflow.com/a/6185525). On second tought I've decided to opt out from magic functions' use, especially that I'll make separate class for authentication that will just use Session class as dependency.
+
+##### Authentication
+Session management is so closely related to authentication that it is easy to forget that they are separate responsibilities. Session management should secure session and hide session internal security data (already mentioned in [Session Management Basics](http://php.net/manual/en/features.session.security.management.php)). Auhentication on the other hand should only care about login, logout and check actual login status and use session only as a way to store its data.

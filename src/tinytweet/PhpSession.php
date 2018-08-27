@@ -7,7 +7,7 @@
 namespace szywo\tinytweet;
 
 /**
- * Class managing session
+ * Class managing php session
  *
  * Just basic functionality as security is not topic of this project.
  * However it is here almost ready to implement PHP Manual's Sessions
@@ -15,13 +15,13 @@ namespace szywo\tinytweet;
  *
  * @package szywo\tinytweet
  */
-class Session
+class PhpSession implements SessionInterface
 {
     /**
      * $_SESSION data container
      *
      * @access private
-     * @var array
+     * @var mixed[]
      */
     private $data = array();
 
@@ -179,7 +179,7 @@ class Session
      * @param mixed $value Value to be set
      * @return void
      */
-    protected function set($name, $value)
+    public function set($name, $value)
     {
         $this->data[$name] = $value;
     }
@@ -190,7 +190,7 @@ class Session
      * @param string $name Name of session variable
      * @return mixed Value of session data or null
      */
-    protected function get($name)
+    public function get($name)
     {
         if (array_key_exists($name, $this->data)) {
             return $this->data[$name];
