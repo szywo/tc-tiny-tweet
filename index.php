@@ -26,7 +26,7 @@ if ($auth->getUser() === null) {
     // registration form path
     $router->route(
         '/^register\/$/',
-        function() use (&$view) {
+        function() use ($view) {
             $view->title = "Register · Tiny Tweet";
             $view->formBoxTemplate = $view->render('view/formRegister.html.php');
             $view->bodyTemplate = $view->render('view/pageBodyLoginTemplate.html.php');
@@ -36,7 +36,7 @@ if ($auth->getUser() === null) {
     // login form path
     $router->route(
         '/^login\/$/',
-        function() use (&$view, &$auth, $request) {
+        function() use ($view, $auth, $request) {
             if ($request->isMethodPost()) {
                 $auth->login("TestUser");
                 header('Location: '.$request->getBasePath());
@@ -63,7 +63,7 @@ if ($auth->getUser() === null) {
     // logout route
     $router->route(
         '/^logout\/*$/',
-        function() use (&$auth, $request) {
+        function() use ($auth, $request) {
             $auth->logout();
             header('Location: '.$request->getBasePath()."login/");
         }
@@ -72,7 +72,7 @@ if ($auth->getUser() === null) {
     // fall back route
     $router->route(
         '/^.*$/',
-        function() use (&$view, $request) {
+        function() use ($view, $request) {
             http_response_code(404);
             $view->requestUri = $request->getRequestUri();
             $view->title = "404 Not Found · Tiny Tweet";
