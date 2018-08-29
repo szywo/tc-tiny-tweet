@@ -2,6 +2,7 @@
 ### Test case - Database access using active row
 #### :pushpin: Purpose
 Implementation of tweeter-like application as an exercise on database and object oriented programming integration. Project goal is to get used to Active Record ORM pattern. This project is a part of "PHP back-end developer" course arranged by [CodersLab](https://coderslab.pl).  Functionality shoud include login, register, view/post tweets, view/post comments, send/receive private messagges. Only login and register forms should be available for not logged-in users (publicly available), other views/forms sould be for logged-in users only (private).
+
 Additionaly I'm going to adhere to [php-fig.org recomendations](https://www.php-fig.org).
 
 :exclamation: **SECURITY DISCLAIMER: This project is not intended for production environment** :exclamation:
@@ -75,4 +76,5 @@ Unfortunately the point of this excercise was to use it. It is easy and intuitiv
 - [How We Code: ORMs and Anemic Domain Models](http://fideloper.com/how-we-code)
 - [Active Record vs Objects](https://sites.google.com/site/unclebobconsultingllc/active-record-vs-objects)
 - And finally [Why active record sucks](https://kore-nordmann.de/blog/why_active_record_sucks.html)
+
 I admit that I have strong procedural background (basic, pascal, c, x86, TI TMS320, Atmel AVR  assemblers) so it is hard to eradicate that mindset and turn to [Tell, Don't Ask](https://pragprog.com/articles/tell-dont-ask) paradigm. But Active Record even for me looks like anti-pattern. It is plain and simple but it's nothing more tahn persistence layer so most of domain logic will end up in fat controller.
