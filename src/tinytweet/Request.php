@@ -118,7 +118,7 @@ class Request
      * @param string $name Name of $_POST variable
      * @return string|null Value of $_POST[$name] or null
      */
-    public function isMethodPost($name)
+    public function get($name)
     {
         if ($this->isMethodPost() && isset($_POST[(string) $name])) {
             return $_POST[$name];
