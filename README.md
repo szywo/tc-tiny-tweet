@@ -1,7 +1,8 @@
 ## Tiny Tweet
 ### Test case - Database access using active row
 #### :pushpin: Purpose
-Implementation of tweeter-like application as an exercise on database and object oriented programming integration. Functionality shoud include login, register, view/post tweets, view/post comments, send/receive private messagges. Only login and register forms should be available for not logged-in users (publicly available), other views/forms sould be for logged-in users only (private). Additionaly I'm going to adhere to [php-fig.org recomendations](https://www.php-fig.org).
+Implementation of tweeter-like application as an exercise on database and object oriented programming integration. Project goal is to get used to Active Record ORM pattern. This project is a part of "PHP back-end developer" course arranged by [CodersLab](https://coderslab.pl).  Functionality shoud include login, register, view/post tweets, view/post comments, send/receive private messagges. Only login and register forms should be available for not logged-in users (publicly available), other views/forms sould be for logged-in users only (private).
+Additionaly I'm going to adhere to [php-fig.org recomendations](https://www.php-fig.org).
 
 :exclamation: **SECURITY DISCLAIMER: This project is not intended for production environment** :exclamation:
 
@@ -25,10 +26,15 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
     - [x] 404
     - [ ] ...
 - [ ] Database Access
+- [ ] Active Record Classes
+    - [x] User
+    - [ ] Post
+    - [ ] Comment
+    - [ ] Message
 - [ ] Application Logic
 
 #### :paperclip: Notes
-These are to log research effort I put into this project and also as a reference fordevelopment  choices I made.
+These are to log research effort I put into this project and also as a reference for development choices I made.
 
 ##### mod_rewrite
 Important part to remember is that, contrary to the order of placement, `RewriteRule` matching takes precedence before `RewriteCond` matching. So if `RewriteRule` pattern does not catch desired url then `RewriteCond` is not even tried. I've learned that by reading through mod_rewrite logs first and then finding [Ruleset Processing](https://httpd.apache.org/docs/2.4/rewrite/tech.html#InternalRuleset) page. I strongly recomend using `LogLevel` directive for testing rewrite rules. Its only drawback is that it cannot be used in `.htaccess` file, so it usually means that you have to setup your own LAMP server. But that is the way it should be done because excessive logging decreases server's performance.
@@ -61,3 +67,12 @@ There are discussions about best practices of using or not magic `__set` and `__
 
 ##### Authentication
 Session management is so closely related to authentication that it is easy to forget that they are separate responsibilities. Session management should secure session and hide session internal security data (already mentioned in [Session Management Basics](http://php.net/manual/en/features.session.security.management.php)). Auhentication on the other hand should only care about login, logout and check actual login status and use session only as a way to store its data.
+
+##### Active Record ORM (Anti-)Pattern
+Unfortunately the point of this excercise was to use it. It is easy and intuitive on a first glance, but as soon as you need data from more than one table its limitations become obvious - ofcourse only if you limit implementation to just one layer and functionality to simple load/save/set/get methods and don't enhance it (like most frameworks do, to the point where they finally turn to more advanced patterns for their ORMs). There is more than a lot of articles about why Active Record is inappropriate for anything that is just a tiny bit more than forms over data:
+- [AnemicDomainModel](https://martinfowler.com/bliki/AnemicDomainModel.html)
+- [ORM anti-pattern series](https://www.mehdi-khalili.com/orm-anti-patterns-series)
+- [How We Code: ORMs and Anemic Domain Models](http://fideloper.com/how-we-code)
+- [Active Record vs Objects](https://sites.google.com/site/unclebobconsultingllc/active-record-vs-objects)
+- And finally [Why active record sucks](https://kore-nordmann.de/blog/why_active_record_sucks.html)
+I admit that I have strong procedural background (basic, pascal, c, x86, TI TMS320, Atmel AVR  assemblers) so it is hard to eradicate that mindset and turn to [Tell, Don't Ask](https://pragprog.com/articles/tell-dont-ask) paradigm. But Active Record even for me looks like anti-pattern. It is plain and simple but it's nothing more tahn persistence layer so most of domain logic will end up in fat controller.
