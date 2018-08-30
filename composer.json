@@ -2,10 +2,6 @@
     "name": "szywo/tc-tiny-tweet",
     "description": "Test case - database and oop integration (active row)",
     "type": "project",
-    "require": {
-        "psr/log": "^1.0",
-        "monolog/monolog": "^1.23"
-    },
     "autoload": {
         "psr-4": {
             "szywo\\tinytweet\\": "src/tinytweet",

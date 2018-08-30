@@ -16,14 +16,14 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 - composer (there are no external dependencies but its autoloader is utilised to manage autoloading)
 
 #### :floppy_disk: Installation
-- :one: Check if you have `composer` installed: open terminal and type `composer`, you should get its help screen. If you don't have `composer` installed open terminal and enter `sudo apt-get install composer` (for Ubuntu 16.04) or check [here](https://getcomposer.org/download/) or consult your system administrator/documentation on how to instal/use `composer`.
-- :two: At command prompt go to your destination directory: `cd` to your www directory (destination dir MUST be empty or you can clone repository to temporary folder and then copy its content to destination dir)
-- :three: Get repository: `git clone https://github.com/szywo/tc-tiny-tweet.git .` - don't forget the dot at the end otherwise additional tc-tiny-tweet dir will be created and content will end up there.
-- :four: Prepare database: `mysql -h hostname -u user -p -D <database_name> < db_dump.sql` enter password when prompted or use phpMyAdmin's import tool
-- :five: Copy `db_conf.php` out of your web root directory (default destination is parent directory of index.php's directory - path: `../db_conf.php` relative to `index.php`'s dir).
-- :six: Edit copied `db_conf.php` with data required to connect to your database. Should you need to change database config script name or location, edit `script_conf.php` file.
-- :seven: Run composer: 'composer update'.
-- :fireworks: You should be good to go.
+1. Check if you have `composer` installed: open terminal and type `composer`, you should get its help screen. If you don't have `composer` installed open terminal and enter `sudo apt-get install composer` (for Ubuntu 16.04) or check [here](https://getcomposer.org/download/) or consult your system administrator/documentation on how to instal/use `composer`.
+2. At command prompt go to your destination directory: `cd` to your www directory (destination dir MUST be empty or you can clone repository to temporary folder and then copy its content to destination dir)
+3. Get repository: `git clone https://github.com/szywo/tc-tiny-tweet.git .` - don't forget the dot at the end otherwise additional tc-tiny-tweet dir will be created and content will end up there.
+4. Prepare database: `mysql -h hostname -u user -p -D <database_name> < db_dump.sql` enter password when prompted or use phpMyAdmin's import tool
+5. Copy `db_conf.php` out of your web root directory (default destination is parent directory of index.php's directory - path: `../db_conf.php` relative to `index.php`'s dir).
+6. Edit copied `db_conf.php` with data required to connect to your database. Should you need to change database config script name or location, edit `script_conf.php` file.
+7. Run composer: `composer update`.
+    :fireworks: You should be good to go.
 
 
 #### :heavy_check_mark: Implementation progress (unordered list)
