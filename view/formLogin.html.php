@@ -13,7 +13,7 @@
         <form action="<?= $tpl_basePath.$tpl_loginUri ?>" accept-charset="UTF-8" method="post">
             <div class="form-group mb-4">
                 <label class="px-1 mb-1" for="email"><strong>Email address</strong></label>
-                <input type="email" name="email" class="form-control" id="email" placeholder="email">
+                <input type="email" name="email" class="form-control" id="email" placeholder="email" value="<?= $tpl_userEmail??"" ?>" autofocus>
             </div>
             <div class="form-group mb-4">
                 <label class="px-1 mb-1" for="pass"><strong>Password</strong></label>

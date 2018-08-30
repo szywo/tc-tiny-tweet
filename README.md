@@ -12,7 +12,19 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 #### :wrench: Requirements
 - Apache (http) server with mod_rewrite (that is allows `.htaccess` file per directory)
 - php 7 - templates use null coalescing operator (`??`)
-- MySQL database
+- MySQL database account with CREATE/DROP TABLE privilege
+- composer (there are no external dependencies but its autoloader is utilised to manage autoloading)
+
+#### :floppy_disk: Installation
+- :one: Check if you have `composer` installed: open terminal and type `composer`, you should get its help screen. If you don't have `composer` installed open terminal and enter `sudo apt-get install composer` (for Ubuntu 16.04) or check [here](https://getcomposer.org/download/) or consult your system administrator/documentation on how to instal/use `composer`.
+- :two: At command prompt go to your destination directory: `cd` to your www directory (destination dir MUST be empty or you can clone repository to temporary folder and then copy its content to destination dir)
+- :three: Get repository: `git clone https://github.com/szywo/tc-tiny-tweet.git .` - don't forget the dot at the end otherwise additional tc-tiny-tweet dir will be created and content will end up there.
+- :four: Prepare database: `mysql -h hostname -u user -p -D <database_name> < db_dump.sql` enter password when prompted or use phpMyAdmin's import tool
+- :five: Copy `db_conf.php` out of your web root directory (default destination is parent directory of index.php's directory - path: `../db_conf.php` relative to `index.php`'s dir).
+- :six: Edit copied `db_conf.php` with data required to connect to your database. Should you need to change database config script name or location, edit `script_conf.php` file.
+- :seven: Run composer: 'composer update'.
+- :fireworks: You should be good to go.
+
 
 #### :heavy_check_mark: Implementation progress (unordered list)
 
@@ -24,21 +36,24 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 - [ ] Page templates
     - [x] Login
     - [x] Register
-    - [x] 404
+    - [x] Server errors (404, 500)
     - [ ] ...
-- [ ] Database Access
+- [x] Database Access
 - [ ] Active Record Classes
     - [x] User
     - [ ] Post
     - [ ] Comment
     - [ ] Message
 - [ ] Application Logic
+    - [x] Login
+    - [ ] Register
+    - [ ] ...
 
 #### :paperclip: Notes
 These are to log research effort I put into this project and also as a reference for development choices I made.
 
 ##### mod_rewrite
-Important part to remember is that, contrary to the order of placement, `RewriteRule` matching takes precedence before `RewriteCond` matching. So if `RewriteRule` pattern does not catch desired url then `RewriteCond` is not even tried. I've learned that by reading through mod_rewrite logs first and then finding [Ruleset Processing](https://httpd.apache.org/docs/2.4/rewrite/tech.html#InternalRuleset) page. I strongly recomend using `LogLevel` directive for testing rewrite rules. Its only drawback is that it cannot be used in `.htaccess` file, so it usually means that you have to setup your own LAMP server. But that is the way it should be done because excessive logging decreases server's performance.
+Important part to remember is that, contrary to the order of placement, `RewriteRule` matching takes precedence before `RewriteCond` matching. So if `RewriteRule` pattern does not catch desired url then `RewriteCond` is not even tried. I've learned that by reading through mod_rewrite logs first and then finding [Ruleset Processing](https://httpd.apache.org/docs/2.4/rewrite/tech.html#InternalRuleset) page. I strongly recomend using `LogLevel` directive for testing rewrite rules. Its only drawback is that it cannot be used in `.htaccess` file, so it usually means that you have to setup your own www server. But that is the way it should be done because excessive logging decreases server's performance.
 
 ##### Template engine
 There are many high end frameworks that allows to easily separate logic from presentation but they are far too heavy for such simple project as this one. I wanted simple lightweight solution that allows nesting templates and also allows using flow control inside templates. I've tried to write something by my own but while looking for ideas I came across solution proposed by _Chad Minick_ in his article [Simple PHP Template Engine](http://chadminick.com/articles/simple-php-template-engine.html). And this is it. It is perfect for such a small project, preiod.
@@ -77,4 +92,4 @@ Unfortunately the point of this excercise was to use it. It is easy and intuitiv
 - [Active Record vs Objects](https://sites.google.com/site/unclebobconsultingllc/active-record-vs-objects)
 - And finally [Why active record sucks](https://kore-nordmann.de/blog/why_active_record_sucks.html)
 
-I admit that I have strong procedural background (basic, pascal, c, x86, TI TMS320, Atmel AVR  assemblers) so it is hard to eradicate that mindset and turn to [Tell, Don't Ask](https://pragprog.com/articles/tell-dont-ask) paradigm. But Active Record even for me looks like anti-pattern. It is plain and simple but it's nothing more tahn persistence layer so most of domain logic will end up in fat controller.
+I admit that I have strong procedural background (basic, pascal, c, x86, TI TMS320, Atmel AVR  assemblers) so it is hard to eradicate that mindset and turn to [Tell, Don't Ask](https://pragprog.com/articles/tell-dont-ask) paradigm. But Active Record even for me looks like anti-pattern. It is plain and simple but it's nothing more than persistence layer so most of domain logic will end up in fat controller.
