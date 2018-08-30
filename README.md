@@ -23,7 +23,8 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
 5. Copy `db_conf.php` out of your web root directory (default destination is parent directory of index.php's directory - path: `../db_conf.php` relative to `index.php`'s dir).
 6. Edit copied `db_conf.php` with data required to connect to your database. Should you need to change database config script name or location, edit `script_conf.php` file.
 7. Run composer: `composer update`.
-    :fireworks: You should be good to go.
+
+:fireworks: You should be good to go :fireworks:
 
 
 #### :heavy_check_mark: Implementation progress (unordered list)

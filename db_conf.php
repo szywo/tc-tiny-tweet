@@ -18,30 +18,14 @@
  *         !!! REMEMBER TO END EACH LINE WITH SEMICOLON (;) !!!
  */
 
-/**
- * Database's host name.
- *
- * @var string
- */
+/* Database's host name. */
 $dbhost = 'sample_host';
 
-/**
- * Database name.
- *
- * @var string
- */
+/* Database name. */
 $dbname = 'sample_database';
 
-/**
- * Database's user name.
- *
- * @var string
- */
+/* Database's user name. */
 $dbuser = 'sample_user';
 
-/**
- * User's password.
- *
- * @var string
- */
+/* User's password. */
 $dbpass = 'sample_password';

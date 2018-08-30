@@ -14,7 +14,7 @@ namespace szywo\tinytweet;
 class DbConnection
 {
     /**
-     * Read
+     * Read config file
      *
      * @param string|null $configFile Database configuration file
      * @return string[]
@@ -22,9 +22,33 @@ class DbConnection
     private static function readConfig($filename = null)
     {
         $sampleTokenFile = 'db_conf.php';
+
+        /**
+         * Database's host name.
+         *
+         * @var string
+         */
         $dbhost = null;
+
+        /**
+         * Database name.
+         *
+         * @var string
+         */
         $dbname = null;
+
+        /**
+         * Database's user name.
+         *
+         * @var string
+         */
         $dbuser = null;
+
+        /**
+         * User's password.
+         *
+         * @var string
+         */
         $dbpass = null;
 
         if ($filename !== null && file_exists($filename)) {
