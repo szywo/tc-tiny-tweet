@@ -22,7 +22,7 @@ use moagrius\RegexRouter;
  *
  * @var string
  */
-$indexFileDepthRelativeToWebRoot = 0;
+$dbConfFileName = 'db_conf.php';
 
 /**
  * The number of subdirectories between web root dir and main (index.php)
@@ -37,7 +37,7 @@ $indexFileDepthRelativeToWebRoot = 0;
  *
  * @var int
  */
-$dbConfFileName = 'db_conf.php';
+$indexFileDepthRelativeToWebRoot = 0;
 
 /**
  * Configuration script path building prefix.
@@ -58,6 +58,7 @@ include 'script_conf.php';
  */
 require __DIR__.'/vendor/autoload.php';
 
+// init
 $view = new Template();
 $request = new Request(__FILE__);
 $auth = new Authentication(new PhpSession());
