@@ -1,7 +1,7 @@
 ## Tiny Tweet
 ### Test case - Database access using active row
 #### :pushpin: Purpose
-Implementation of tweeter-like application as an exercise on database and object oriented programming integration. Project goal is to get used to Active Record ORM pattern. This project is a part of "PHP back-end developer" course arranged by [CodersLab](https://coderslab.pl).  Functionality shoud include login, register, view/post tweets, view/post comments, send/receive private messagges. Only login and register forms should be available for not logged-in users (publicly available), other views/forms sould be for logged-in users only (private).
+Implementation of tweeter-like application as an exercise on database and object oriented programming integration. Project goal is to get used to Active Record ORM pattern with use of pure PHP/SQL - no frameworks or AJAX-like are allowed. This project is a part of "PHP back-end developer" course arranged by [CodersLab](https://coderslab.pl). Functionality shoud include login, register, view/post tweets, view/post comments, send/receive private messagges. Only login and register forms should be available for not logged-in users (publicly available), other views/forms sould be for logged-in users only (private).
 
 Additionaly I'm going to adhere to [php-fig.org recomendations](https://www.php-fig.org).
 
