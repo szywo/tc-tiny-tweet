@@ -91,7 +91,14 @@ if ($auth->getUser() === null) {
     // registration form path
     $router->route(
         '/^register\/$/',
-        function() use ($view) {
+        function() use ($view, $auth, $request, $db) {
+            if ($request->isMethodPost()) {
+                $errors = 0;
+                if (preg_match('/^[\d\w-]{3,30}$/', $request->get('name')) !== 1 ) {
+                    $error++;
+                    $view->errorValidationName = "";
+                }
+            }
             $view->title = "Register · Tiny Tweet";
             $view->formBoxTemplate = $view->render('view/formRegister.html.php');
             $view->bodyTemplate = $view->render('view/pageBodyLoginTemplate.html.php');
@@ -108,6 +115,7 @@ if ($auth->getUser() === null) {
                     $auth->login($user->getId());
                     header('Location: '.$request->getBasePath());
                 }
+                $view->authInvalid = "is-invalid";
                 $view->infoBoxTemplate = $view->render('view/infoErrorLogin.html.php');
                 $view->userEmail = htmlentities($request->get('email'), ENT_QUOTES|ENT_HTML401);
             }

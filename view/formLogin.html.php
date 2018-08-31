@@ -13,11 +13,11 @@
         <form action="<?= $tpl_basePath.$tpl_loginUri ?>" accept-charset="UTF-8" method="post">
             <div class="form-group mb-4">
                 <label class="px-1 mb-1" for="email"><strong>Email address</strong></label>
-                <input type="email" name="email" class="form-control" id="email" placeholder="email" value="<?= $tpl_userEmail??"" ?>" autofocus>
+                <input type="email" name="email" class="form-control <?= $tpl_authInvalid??"" ?>" id="email" placeholder="email" value="<?= $tpl_userEmail??"" ?>" autofocus required>
             </div>
             <div class="form-group mb-4">
                 <label class="px-1 mb-1" for="pass"><strong>Password</strong></label>
-                <input type="password" name="pass" class="form-control" id="pass" placeholder="password">
+                <input type="password" name="pass" class="form-control <?= $tpl_authInvalid??"" ?>" id="pass" placeholder="password" required>
             </div>
             <div class="form-group mb-1 mt-4 pt-2">
                 <input type="submit" name="login" class="btn btn-block btn-outline-primary btn-lg" id="submit" value="Sign in">
