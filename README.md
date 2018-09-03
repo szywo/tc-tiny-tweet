@@ -47,7 +47,7 @@ Security is not a topic of this exercise so beside absolutly basic measures (usi
     - [ ] Message
 - [ ] Application Logic
     - [x] Login
-    - [ ] Register
+    - [x] Register
     - [ ] ...
 
 #### :paperclip: Notes
@@ -94,3 +94,6 @@ Unfortunately the point of this excercise was to use it. It is easy and intuitiv
 - And finally [Why active record sucks](https://kore-nordmann.de/blog/why_active_record_sucks.html)
 
 I admit that I have strong procedural background (basic, pascal, c, x86, TI TMS320, Atmel AVR  assemblers) so it is hard to eradicate that mindset and turn to [Tell, Don't Ask](https://pragprog.com/articles/tell-dont-ask) paradigm. But Active Record even for me looks like anti-pattern. It is plain and simple but it's nothing more than persistence layer so most of domain logic will end up in fat controller.
+
+##### Form validation
+It is just few simple checks but on more advanced forms it should be done by separate class. Also confirmation and error messages are added on server side, but to be ready for JavaScript client side helper they should all be rendered and server should decide which of them to unhide based on validation result (for example with Bootstrap it is to just set or not special d-none class, which then can be processed by JS script on client side). 

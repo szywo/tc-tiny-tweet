@@ -59,8 +59,9 @@ include 'script_conf.php';
 require __DIR__.'/vendor/autoload.php';
 
 // init
-$view = new Template();
 $request = new Request(__FILE__);
+$view = new Template();
+$view->basePath = $request->getBasePath();
 $auth = new Authentication(new PhpSession());
 $dbConfPath = "";
 do {
@@ -80,11 +81,11 @@ try {
     echo $view->render('view/pageTemplate.html.php');
     exit();
 }
-$view->basePath = $request->getBasePath();
 
 // routing
 $router = new RegexRouter();
-if ($auth->getUser() === null) {
+$userId = $auth->getUser();
+if ($userId === null || User::loadById($db, $userId) === null) {
     $view->registerUri = "register/";
     $view->loginUri = "login/";
 
@@ -92,12 +93,74 @@ if ($auth->getUser() === null) {
     $router->route(
         '/^register\/$/',
         function() use ($view, $auth, $request, $db) {
+            $view->validate = false;
             if ($request->isMethodPost()) {
-                $errors = 0;
-                if (preg_match('/^[\d\w-]{3,30}$/', $request->get('name')) !== 1 ) {
-                    $error++;
-                    $view->errorValidationName = "";
+                $view->validate = true;
+                $errorCnt = 0;
+                $view->errorValidName = false;
+                $name = $request->get('name');
+                $view->registerName = htmlentities($name, ENT_QUOTES|ENT_HTML401);
+                if (preg_match('/^[\w-][\w- ]{1,28}[\w-]$/', $name) !== 1 ) {
+                    $errorCnt++;
+                    $view->errorValidName = true;
+                    $view->errorValidNameMsg = $view->render('view/formRegisterErrorName.html.php');
+                } else {
+                    $view->nameValidMsg = $view->render('view/formRegisterValidateOK.html.php');
                 }
+                $view->errorValidEmail = false;
+                $email = filter_var($request->get('email'), FILTER_VALIDATE_EMAIL);
+                $view->registerEmail = htmlentities($request->get('email'), ENT_QUOTES|ENT_HTML401);
+                if ($email === false) {
+                    $errorCnt++;
+                    $view->errorValidEmail = true;
+                    $view->errorValidEmailMsg = $view->render('view/formRegisterErrorEmail.html.php');
+                }
+                if (User::loadByEmail($db, $request->get('email')) !== null) {
+                    $errorCnt++;
+                    $view->errorValidEmail = true;
+                    $view->errorValidEmailMsg = $view->render('view/formRegisterErrorEmailDuplicate.html.php');
+                }
+                if ($view->errorValidEmail === false) {
+                    $view->emailValidMsg = $view->render('view/formRegisterValidateOK.html.php');
+                }
+                $view->errorValidPass = false;
+                $view->errorValidPass2 = false;
+                $pass = $request->get('pass');
+                if (preg_match('/^.{5,}$/', $pass) !== 1 ) {
+                    $errorCnt++;
+                    $view->errorValidPass = true;
+                    $view->errorValidPass2 = true;
+                    $view->errorValidPassMsg = $view->render('view/formRegisterErrorPass.html.php');
+                }
+                $pass2 = $request->get('pass2');
+                if ($pass !== $pass2) {
+                    $errorCnt++;
+                    $view->errorValidPass = true;
+                    $view->errorValidPass2 = true;
+                    $view->errorValidPass2Msg = $view->render('view/formRegisterErrorPassConfirm.html.php');
+                }
+                if ($errorCnt === 0) {
+                    $user = new User();
+                    $user->setName($name);
+                    $user->setEmail($email);
+                    $user->setPass($pass);
+                    if ($user->save($db) !== true) {
+                        http_response_code(500);
+                        $view->requestUri = $request->getRequestUri();
+                        $view->title = "500 Internal Server Error · Tiny Tweet";
+                        $view->cssFile = 'pageError.css';
+                        $view->errorCode = 500;
+                        $view->errorMsg = 'Internal server error.';
+                        $view->infoBoxTemplate = $view->render('view/infoServerError.html.php');
+                        $view->bodyTemplate = $view->render('view/pageBodyTemplate.html.php');
+                        echo $view->render('view/pageTemplate.html.php');
+                        exit();
+                    }
+                    $auth->login($user->getId());
+                    header('Location: '.$request->getBasePath());
+                }
+                $view->registerErrorCount = $errorCnt;
+                $view->infoBoxTemplate = $view->render('view/infoErrorRegister.html.php');
             }
             $view->title = "Register · Tiny Tweet";
             $view->formBoxTemplate = $view->render('view/formRegister.html.php');
@@ -115,7 +178,7 @@ if ($auth->getUser() === null) {
                     $auth->login($user->getId());
                     header('Location: '.$request->getBasePath());
                 }
-                $view->authInvalid = "is-invalid";
+                $view->authInvalid = true;
                 $view->infoBoxTemplate = $view->render('view/infoErrorLogin.html.php');
                 $view->userEmail = htmlentities($request->get('email'), ENT_QUOTES|ENT_HTML401);
             }
